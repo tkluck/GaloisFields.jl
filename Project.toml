@@ -1,0 +1,6 @@
+authors = ["Timo Kluck <tkluck@infty.nl>"]
+name = "GaloisFields"
+uuid = "9c44beea-d475-11e8-18d3-e1187efeddc1"
+version = "0.1.0"
+
+[deps]
