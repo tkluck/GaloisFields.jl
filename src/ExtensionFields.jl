@@ -1,0 +1,127 @@
+"""
+    F = ExtensionField{T<:NTuple, p, MinPoly}
+
+Algebraic extension of a finite field of order ``p``.
+"""
+struct ExtensionField{F, N, α, MinPoly} <: AbstractGaloisField
+    n::NTuple{N, F}
+end
+
+basefield(::Type{ExtensionField{F, N, α, MinPoly}}) where {F, N, α, MinPoly} = F
+char(::Type{ExtensionField{F, N, α, MinPoly}})      where {F, N, α, MinPoly} = char(F)
+n(::Type{ExtensionField{F, N, α, MinPoly}})         where {F, N, α, MinPoly} = N
+genname(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} = α
+minpoly(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} = MinPoly
+
+# -----------------------------------------------------------------------------
+#
+# Addition and substraction
+#
+# -----------------------------------------------------------------------------
+zero(T::Type{<:ExtensionField}) = T(ntuple(i -> zero(basefield(T)), N(T)))
+one( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 1 ? one(basefield(T)) : zero(basefield(T)), n(T)))
+gen( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 2 ? one(basefield(T)) : zero(basefield(T)), n(T)))
+
++(a::F, b::F) where F<:ExtensionField = F(a.n .+ b.n)
+-(a::F, b::F) where F<:ExtensionField = F(a.n .- b.n)
+
++(a::ExtensionField) = copy(a)
+-(a::ExtensionField) = typeof(a)(.-a.n)
+
+# -----------------------------------------------------------------------------
+#
+# The interesting extension field operations: multiplication and division
+#
+# -----------------------------------------------------------------------------
+function _rem(a::AbstractVector{C}, b::AbstractVector{C}) where C
+    a = copy(a)
+    len_a = findlast(!iszero, a)
+    len_b = findlast(!iszero, b)
+    while len_a >= len_b
+        q = a[len_a] // b[len_b]
+        a[len_a-len_b+1:len_a] .-= q .* b[1:len_b]
+        len_a = findprev(!iszero, a, len_a-1)
+    end
+    a
+end
+
+function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
+    a = copy(a)
+    b = copy(b)
+    len_a = findlast(!iszero, a)
+    len_b = findlast(!iszero, b)
+    len_a === nothing && (len_a = 0)
+    len_b === nothing && (len_b = 0)
+    m = max(len_a, len_b)
+    s0, s1 = zeros(C, m), zeros(C, m)
+    t0, t1 = zeros(C, m), zeros(C, m)
+    s0[1] = one(C)
+    t1[1] = one(C)
+    # The loop invariant is: s0*a0 + t0*b0 == a
+    while len_b != 0
+        s2 = copy(s0)
+        t2 = copy(t0)
+        while len_a >= len_b
+            q = a[len_a] // b[len_b]
+            a[len_a-len_b+1:len_a] .-= q .* b[1:len_b]
+
+            deg_diff = len_a - len_b
+            s2[deg_diff+1:end] .-= q .* s1[1:end-deg_diff]
+            t2[deg_diff+1:end] .-= q .* t1[1:end-deg_diff]
+
+            len_a = findprev(!iszero, a, len_a-1)
+            len_a == nothing && (len_a = 0)
+        end
+        a, b = b, a
+        len_a, len_b = len_b, len_a
+        s0, s1 = s1, s2
+        t0, t1 = t1, t2
+    end
+    return (a, s0, t0)
+end
+
+_gcd(a, b) = ( (d,u,v) = _gcdx(a, b); d )
+
+function *(a::F, b::F) where F <: ExtensionField
+    N = n(F)
+    coeffs = zeros(basefield(F), 2N - 1)
+    for (i, a_i) in enumerate(a.n)
+        for (j, b_j) in enumerate(b.n)
+            coeffs[i+j-1] += a_i*b_j
+        end
+    end
+    coeffs = _rem(coeffs, collect(minpoly(F)))
+    return F(ntuple(i -> coeffs[i], n(F)))
+end
+
+function inv(a::F) where F <: ExtensionField
+    N = n(F)
+    coeffs = collect(a.n)
+    d, u, v = _gcdx(coeffs, collect(minpoly(F)))
+    if iszero(d[1]) || any(!iszero(d[2:end]))
+        throw(DivideError("$a is not invertible in $F"))
+    end
+    u ./= d[1]
+    return F(ntuple(i -> u[i], n(F)))
+end
+
+/(a::F, b::F)  where F <: ExtensionField = a * inv(b)
+//(a::F, b::F) where F <: ExtensionField = a * inv(b)
+
+function show(io::IO, a::ExtensionField)
+    show(Poly(collect(a.n), genname(typeof(a))))
+end
+function show(io::IO, ::Type{<:ExtensionField{F,N}}) where {F,N}
+    q = char(F) ^ N
+    number = replace("$q", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])
+    write(io, "𝔽$number")
+end
+
+promote_rule(F::Type{<:ExtensionField}, ::Type{<:Integer}) = F
+function convert(F::Type{<:ExtensionField}, i::Integer)
+    k = basefield(F)
+    F(ntuple(j -> j == 1 ? k(i) : zero(k), n(F)))
+end
+
+convert(::Type{F}, n::F) where F<:ExtensionField = n
+(::Type{F})(n::F) where F<:ExtensionField = n
