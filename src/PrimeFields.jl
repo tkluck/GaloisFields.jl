@@ -35,6 +35,11 @@ inv(a::F)     where F<:PrimeField = F(Reduced(), invmod(a.n, char(F)))
 
 iszero(a::PrimeField) = iszero(a.n)
 
+# -----------------------------------------------------------------------------
+#
+# Constructors and promotion
+#
+# -----------------------------------------------------------------------------
 promote_rule(F::Type{<:PrimeField}, ::Type{<:Integer}) = F
 convert(F::Type{PrimeField{I,p}}, i::Integer) where {I,p} = F(Reduced(), I(mod(i, p)))
 

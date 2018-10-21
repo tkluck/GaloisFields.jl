@@ -16,13 +16,9 @@ like
 being called for non-concrete types. (I haven't dug deep enough to find
 a nice minimal example.)
 
-That's why all show overloads do
+That's why all `show` overloads for types do
 
-    if isconcretetype(...)
-        <do whatever>
-    else
-        defaultshow(...)
-    end
+    !isconcretetype(t) && return defaultshow(io, t)
 """
 function defaultshow(io, t)
     if t isa DataType

@@ -4,58 +4,14 @@
 A module for finite fields. Synopsis:
 
     using GaloisFields
-    # a finite field of prime order
     F = GaloisField(3)
-    # a finite field of prime power order, plus a primitive element
-    F,β = GaloisField(3, 2)
-    # friendlier syntax for the same thing
-    F,β = @GaloisField 3^2
-    # supply your own minimum polynomial for a primitive element
-    F,β = GaloisField(3, :β => [2, 1, 1])
-    # friendlier syntax for the same thing; inject β
-    F = @GaloisField! 3 β^2 + β + 2
-
-    # friendly syntax
     F = @GaloisField ℤ/3ℤ
     F = @GaloisField 𝔽₃
 
-    # it is also possible to declare a Galois field as an extension
-    # of a field you defined earlier:
+    F, β = GaloisField(3, :β => [2, 1, 1])
+    F = @GaloisField! 𝔽₃ β^2 + β + 2
 
-    # a finite field of degree 2 over F
-    # (γ generates it over F, not necessarily over the prime field!)
-    G,γ = GaloisField(F, 2)
-    # friendlier syntax
-    G,γ = @GaloisField F^2
-    # supply your own minimum polynomial for a primitive element
-    G,γ = GaloisField(F, :γ => [2, 1, 1])
-    # friendlier syntax for the same thing; inject γ
-    F = @GaloisField! F γ^2 + γ + 2
-
-    # friendly syntax
-    F = @GaloisField! ℤ/3ℤ γ^2 + 1
-    F = @GaloisField! 𝔽₃    γ^2 + 1
-
-In all cases, the variable name (e.g. β or γ) is part of the type; this
-lets you define identifications between isomorphic (sub)fields. For example,
-with the following definition
-
-    F = @GaloisField! 𝔽₂ β^2 + β + 1
-    G = @GaloisField! 𝔽₂ γ^2 + γ + 1
-
-the fields ``F`` and ``G`` are isomorphic, but not canonically. We might
-define
-
-    @GaloisFields.identify β => γ + 1
-    @GaloisFields.identify γ => β + 1
-
-to allow for conversions like
-
-    G(β)
-    convert(F, γ + 1)
-
-This module has a special case for efficient binary representation of
-power-of-two fields.
+See the docstrings for `GaloisField`, `@GaloisField`, and `@GaloisField!` for details.
 """
 module GaloisFields
 
@@ -96,7 +52,7 @@ include("Display.jl")
 
 """
     F = GaloisField(p)
-    F,α = GaloisField(p, [1, 0, 1])
+    F,α = GaloisField(p, :β => [1, 0, 1])
 
 Return a type representing a finite field.
 
@@ -105,6 +61,24 @@ The single-argument signature returns the finite field ``ℤ/pℤ``.
 The two-arguments signature returns an algebraic extension of that field,
 with minimum polynomial given by the second argument: a dense representation
 of the univariate, monic polynomial, with ascending degree.
+
+Note that in the latter case, the variable name (e.g. β above) is part of the
+type. This lets you define identifications between isomorphic (sub)fields. For
+example, with the following definition
+
+    F = @GaloisField! 𝔽₂ β^2 + β + 1
+    G = @GaloisField! 𝔽₂ γ^2 + γ + 1
+
+the fields ``F`` and ``G`` are isomorphic, but not canonically. We might
+define
+
+    @GaloisFields.identify β => γ + 1
+    @GaloisFields.identify γ => β + 1
+
+to allow for conversions like
+
+    G(β)
+    convert(F, γ + 1)
 """
 GaloisField(p::Integer) = PrimeField{typeof(p), p}
 GaloisField(p::Integer, args...) = GaloisField(GaloisField(p), args...)
@@ -117,6 +91,13 @@ function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:Abs
     return EF, gen(EF)
 end
 
+"""
+    F = @GaloisField 3
+    F = @GaloisField ℤ/3ℤ
+    F = @GaloisField 𝔽₃
+
+Different ways of defining a finite field of a given order.
+"""
 macro GaloisField(expr)
     res = _parse_declaration(expr)
     if res === nothing
@@ -130,12 +111,8 @@ function _parse_declaration(expr)
     if expr isa Integer
         return :( $GaloisField($expr) )
     elseif expr isa Expr
-        # @GaloisField p^n
-        if expr.head == :call && expr.args[1] == :^
-            p, n = expr.args[2:end]
-            return :( $GaloisField($p, $n) )
         # @GaloisField ℤ/pℤ
-        elseif expr.head == :call && expr.args[1] == :/ &&
+        if expr.head == :call && expr.args[1] == :/ &&
             expr.args[2] == :ℤ && expr.args[3].head == :call &&
             expr.args[3].args[1] == :* && expr.args[3].args[3] == :ℤ
             p = expr.args[3].args[2]
@@ -154,6 +131,7 @@ function _parse_declaration(expr)
             return :( $GaloisField($p) )
         end
     end
+    return nothing
 end
 
 _parsepoly(x) = x
@@ -170,6 +148,24 @@ end
 
 Define a finite field `G` and inject a variable for its
 primitive element into the current scope.
+
+Note that the variable name (e.g. β above) is part of the type. This lets you
+define identifications between isomorphic (sub)fields. For example, with the
+following definition
+
+    F = @GaloisField! 𝔽₂ β^2 + β + 1
+    G = @GaloisField! 𝔽₂ γ^2 + γ + 1
+
+the fields ``F`` and ``G`` are isomorphic, but not canonically. We might
+define
+
+    @GaloisFields.identify β => γ + 1
+    @GaloisFields.identify γ => β + 1
+
+to allow for conversions like
+
+    G(β)
+    convert(F, γ + 1)
 """
 macro GaloisField!(expr, minpoly)
     poly = @eval $(_parsepoly(minpoly))

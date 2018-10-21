@@ -1,7 +1,7 @@
 """
-    F = ExtensionField{T<:NTuple, p, MinPoly}
+    F = ExtensionField{F <: AbstractGaloisField, N, α, MinPoly}
 
-Algebraic extension of a finite field of order ``p``.
+Algebraic extension of a finite field ``F`` of degree ``N``.
 """
 struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly} <: AbstractGaloisField
     n::NTuple{N, F}
@@ -87,8 +87,6 @@ function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
     return (a, s0, t0)
 end
 
-_gcd(a, b) = ( (d,u,v) = _gcdx(a, b); d )
-
 function *(a::F, b::F) where F <: ExtensionField
     N = n(F)
     coeffs = zeros(basefield(F), 2N - 1)
@@ -115,6 +113,11 @@ end
 /(a::F, b::F)  where F <: ExtensionField = a * inv(b)
 //(a::F, b::F) where F <: ExtensionField = a * inv(b)
 
+# -----------------------------------------------------------------------------
+#
+# Constructors and promotion
+#
+# -----------------------------------------------------------------------------
 promote_rule(F::Type{<:ExtensionField}, ::Type{<:Integer}) = F
 function convert(F::Type{<:ExtensionField}, i::Integer)
     convert(F, convert(basefield(F), i))
