@@ -1,5 +1,9 @@
 # GaloisFields.jl - finite fields for Julia
 
+| **Build Status**                                                | **Test coverage**                                       |
+|:---------------------------------------------------------------:|:-------------------------------------------------------:|
+| [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![Coverage Status][codecov-img]][codecov-url]      |
+
 ## Introduction
 
 This module defines types representing [finite fields][galois-fields-wiki]. It
@@ -50,3 +54,12 @@ to allow for conversions like
 G(β)
 convert(F, γ + 1)
 ```
+
+[travis-img]: https://travis-ci.org/tkluck/GaloisFields.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/tkluck/GaloisFields.jl
+
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/4g6ax1ni7ijx3rn4?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/tkluck/galoisfields-jl
+
+[codecov-img]: https://codecov.io/gh/tkluck/GaloisFields.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/tkluck/GaloisFields.jl
