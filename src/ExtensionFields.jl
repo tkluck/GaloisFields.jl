@@ -18,9 +18,12 @@ minpoly(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} =
 # Addition and substraction
 #
 # -----------------------------------------------------------------------------
-zero(T::Type{<:ExtensionField}) = T(ntuple(i -> zero(basefield(T)), n(T)))
-one( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 1 ? one(basefield(T)) : zero(basefield(T)), n(T)))
-gen( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 2 ? one(basefield(T)) : zero(basefield(T)), n(T)))
+zero(T::Type{<:ExtensionField}) =
+    T(ntuple(i -> zero(basefield(T)), n(T)))
+one( T::Type{<:ExtensionField}) =
+    T(ntuple(i -> i == 1 ? one(basefield(T)) : zero(basefield(T)), n(T)))
+gen( T::Type{<:ExtensionField}) =
+    T(ntuple(i -> i == 2 ? one(basefield(T)) : zero(basefield(T)), n(T)))
 
 +(a::F, b::F) where F<:ExtensionField = F(a.n .+ b.n)
 -(a::F, b::F) where F<:ExtensionField = F(a.n .- b.n)
@@ -89,7 +92,7 @@ function *(a::F, b::F) where F <: ExtensionField
     coeffs = zeros(basefield(F), 2N - 1)
     for (i, a_i) in enumerate(a.n)
         for (j, b_j) in enumerate(b.n)
-            coeffs[i+j-1] += a_i*b_j
+            coeffs[i+j-1] += a_i * b_j
         end
     end
     coeffs = _rem(coeffs, collect(minpoly(F)))
