@@ -113,15 +113,6 @@ end
 /(a::F, b::F)  where F <: ExtensionField = a * inv(b)
 //(a::F, b::F) where F <: ExtensionField = a * inv(b)
 
-function show(io::IO, a::ExtensionField)
-    show(Poly(collect(a.n), genname(typeof(a))))
-end
-function show(io::IO, ::Type{<:ExtensionField{F,N}}) where {F,N}
-    q = char(F) ^ N
-    number = replace("$q", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])
-    write(io, "𝔽$number")
-end
-
 promote_rule(F::Type{<:ExtensionField}, ::Type{<:Integer}) = F
 function convert(F::Type{<:ExtensionField}, i::Integer)
     k = basefield(F)

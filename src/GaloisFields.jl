@@ -93,6 +93,7 @@ char(::Type{<:Integer}) = 0
 include("PrimeFields.jl")
 include("ExtensionFields.jl")
 include("Conversions.jl")
+include("Display.jl")
 
 """
     F = GaloisField(p)
