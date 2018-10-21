@@ -2,7 +2,7 @@
 show(io::IO, a::PrimeField) = show(io, a.n)
 
 function show(io::IO, a::ExtensionField)
-    show(Poly(collect(a.n), genname(typeof(a))))
+    show(io, Poly(collect(a.n), genname(typeof(a))))
 end
 
 """
