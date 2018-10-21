@@ -82,7 +82,13 @@ to allow for conversions like
     G(β)
     convert(F, γ + 1)
 """
-GaloisField(p::Integer) = PrimeField{typeof(p), p}
+function GaloisField(p::Integer)
+    if p > 1
+        return PrimeField{typeof(p), p}
+    else
+        throw("Cannot create GaloisField($p)")
+    end
+end
 GaloisField(p::Integer, args...) = GaloisField(GaloisField(p), args...)
 GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Poly) = GaloisField(F, minpoly.var => coeffs(minpoly))
 function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:AbstractVector{<:Number}})
