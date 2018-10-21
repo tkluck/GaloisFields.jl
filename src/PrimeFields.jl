@@ -18,14 +18,14 @@ eltype(::Type{PrimeField{I,p}}) where {I, p} = I
 # Arithmetic
 #
 # -----------------------------------------------------------------------------
-zero(T::Type{<:PrimeField{I}}) where I = T(zero(I))
-one( T::Type{<:PrimeField{I}}) where I = T(one(I))
+zero(F::Type{<:PrimeField{I}}) where I = F(zero(I))
+one( F::Type{<:PrimeField{I}}) where I = F(one(I))
 
 +(a::F, b::F) where F<:PrimeField = F(a.n + b.n)
 -(a::F, b::F) where F<:PrimeField = F(a.n - b.n)
 
 +(a::PrimeField) = a
--(a::PrimeField) = F(Reduced(), char(F) - a.n)
+-(a::PrimeField) = typeof(a)(Reduced(), char(typeof(a)) - a.n)
 
 *(a::F, b::F) where F<:PrimeField = F(a.n * b.n)
 

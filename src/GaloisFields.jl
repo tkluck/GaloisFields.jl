@@ -133,6 +133,7 @@ macro GaloisField(expr)
             p = expr.args[3].args[2]
             return :( $GaloisField($p) )
         end
+    # @GaloisField 𝔽₃₇
     elseif expr isa Symbol
         str = collect(string(expr))
         if str[1] == '𝔽'

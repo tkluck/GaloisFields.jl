@@ -18,7 +18,7 @@ minpoly(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} =
 # Addition and substraction
 #
 # -----------------------------------------------------------------------------
-zero(T::Type{<:ExtensionField}) = T(ntuple(i -> zero(basefield(T)), N(T)))
+zero(T::Type{<:ExtensionField}) = T(ntuple(i -> zero(basefield(T)), n(T)))
 one( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 1 ? one(basefield(T)) : zero(basefield(T)), n(T)))
 gen( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 2 ? one(basefield(T)) : zero(basefield(T)), n(T)))
 
@@ -37,10 +37,10 @@ function _rem(a::AbstractVector{C}, b::AbstractVector{C}) where C
     a = copy(a)
     len_a = findlast(!iszero, a)
     len_b = findlast(!iszero, b)
-    while len_a >= len_b
+    while len_a !== nothing && len_a >= len_b
         q = a[len_a] // b[len_b]
         a[len_a-len_b+1:len_a] .-= q .* b[1:len_b]
-        len_a = findprev(!iszero, a, len_a-1)
+        len_a = findprev(!iszero, a, len_a - 1)
     end
     a
 end
