@@ -86,7 +86,6 @@ struct Reduced end
 
 Return the characteristic of a finite field, or 0 for <:Integer or <:Rational{<Integer}.
 """
-char(x) = char(typeof(x))
 char(::Type{<:Rational{<:Integer}}) = 0
 char(::Type{<:Integer}) = 0
 
@@ -109,8 +108,8 @@ of the univariate, monic polynomial, with ascending degree.
 """
 GaloisField(p::Integer) = PrimeField{typeof(p), p}
 GaloisField(p::Integer, args...) = GaloisField(GaloisField(p), args...)
-GaloisField(F::Type{<:PrimeField}, minpoly::Poly) = GaloisField(F, minpoly.var => coeffs(minpoly))
-function GaloisField(F::Type{<:PrimeField}, minpoly::Pair{Symbol, <:AbstractVector{<:Number}})
+GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Poly) = GaloisField(F, minpoly.var => coeffs(minpoly))
+function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:AbstractVector{<:Number}})
     sym, coeffs = minpoly
     mp = tuple(map(F, coeffs)...)
     N = length(coeffs) - 1
@@ -119,6 +118,14 @@ function GaloisField(F::Type{<:PrimeField}, minpoly::Pair{Symbol, <:AbstractVect
 end
 
 macro GaloisField(expr)
+    res = _parse_declaration(expr)
+    if res === nothing
+        throw("Not implemented: @GaloisField $expr")
+    end
+    return res
+end
+
+function _parse_declaration(expr)
     # @GaloisField p
     if expr isa Integer
         return :( $GaloisField($expr) )
@@ -147,24 +154,32 @@ macro GaloisField(expr)
             return :( $GaloisField($p) )
         end
     end
-    throw("Not implemented: @GaloisField $expr")
 end
 
-parsepoly(x) = x
-parsepoly(x::Symbol) = :( $(Poly([0, 1], x) ) )
-function parsepoly(expr::Expr)
-    Expr(expr.head, expr.args[1], map(parsepoly, expr.args[2:end])...)
+_parsepoly(x) = x
+_parsepoly(x::Symbol) = :( $(Poly([0, 1], x) ) )
+function _parsepoly(expr::Expr)
+    Expr(expr.head, expr.args[1], map(_parsepoly, expr.args[2:end])...)
 end
 
+"""
+    G = @GaloisField! 3 β^2 + 1
+    G = @GaloisField! 𝔽₃ β^2 + 1
+    K = GaloisField(3)
+    G = @GaloisField! K β^2 + 1
+
+Define a finite field `G` and inject a variable for its
+primitive element into the current scope.
+"""
 macro GaloisField!(expr, minpoly)
-    poly = @eval $(parsepoly(minpoly))
+    poly = @eval $(_parsepoly(minpoly))
+    decl = _parse_declaration(expr)
+    F = something(decl, esc(expr))
     quote
-        F = @GaloisField $expr
-        EF, $(esc(poly.var)) = $GaloisField(F, $poly)
+        EF, $(esc(poly.var)) = $GaloisField($F, $poly)
         EF
     end
 end
-
 
 export GaloisField, @GaloisField, @GaloisField!, char
 

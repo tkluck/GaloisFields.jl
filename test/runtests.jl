@@ -27,6 +27,8 @@ using GaloisFields
         @test char(G) == 3
         @test repr(G) == "𝔽₉"
 
+        @test G(1) + G(-1) == 0
+
         @test α^2 + 1 == 0
         @test β^2 + 1 == 0
 
@@ -44,6 +46,8 @@ using GaloisFields
         @test char(G) == 2
         @test repr(G) == "𝔽₄"
 
+        @test G(1) + G(-1) == 0
+
         @test α^2 + α + 1 == 0
         @test β^2 + β + 1 == 0
 
@@ -52,5 +56,22 @@ using GaloisFields
 
         @test α - β == 1
         @test H(α) - β == 1
+    end
+
+    @testset "Nested extension of 𝔽₂₉" begin
+        G = @GaloisField! 𝔽₂₉ α^2 + 1
+        H = @GaloisField! G   β^2 + β + 1
+        K = @GaloisField! H   γ^4 + γ^3 + γ^2 + γ + 1
+
+        @test H(1) + H(-1) == 0
+
+        @test H(α)^2 == -1
+        @test K(α)^2 == -1
+        @test β^2 + β + 1 == 0
+        @test K(β)^2 + K(β) + 1 == 0
+        @test γ^4 + γ^3 + γ^2 + γ + 1 == 0
+
+        @test α + β == β + α
+        @test α + β + γ == γ + β + α
     end
 end

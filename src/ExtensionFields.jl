@@ -3,8 +3,10 @@
 
 Algebraic extension of a finite field of order ``p``.
 """
-struct ExtensionField{F, N, α, MinPoly} <: AbstractGaloisField
+struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly} <: AbstractGaloisField
     n::NTuple{N, F}
+    ExtensionField{F, N, α, MinPoly}(n::NTuple{N, F}) where
+        {F <: AbstractGaloisField, N, α, MinPoly} = new(n)
 end
 
 basefield(::Type{ExtensionField{F, N, α, MinPoly}}) where {F, N, α, MinPoly} = F
@@ -115,9 +117,7 @@ end
 
 promote_rule(F::Type{<:ExtensionField}, ::Type{<:Integer}) = F
 function convert(F::Type{<:ExtensionField}, i::Integer)
-    k = basefield(F)
-    F(ntuple(j -> j == 1 ? k(i) : zero(k), n(F)))
+    convert(F, convert(basefield(F), i))
 end
 
 (::Type{F})(n::F) where F<:ExtensionField = F(n.n)
-convert(::Type{F}, n::F) where F<:ExtensionField = n
