@@ -59,17 +59,17 @@ using GaloisFields
     end
 
     @testset "Nested extension of 𝔽₂₉" begin
-        G = @GaloisField! 𝔽₂₉ α^2 + 1
-        H = @GaloisField! G   β^2 + β + 1
-        K = @GaloisField! H   γ^4 + γ^3 + γ^2 + γ + 1
+        G = @GaloisField! 𝔽₂₉ α^2 - 2
+        H = @GaloisField! G   β^3 + 2β + 1
+        K = @GaloisField! H   γ^7 - 2
 
         @test H(1) + H(-1) == 0
 
-        @test H(α)^2 == -1
-        @test K(α)^2 == -1
-        @test β^2 + β + 1 == 0
-        @test K(β)^2 + K(β) + 1 == 0
-        @test γ^4 + γ^3 + γ^2 + γ + 1 == 0
+        @test H(α)^2 == 2
+        @test K(α)^2 == 2
+        @test β^3 + 2β + 1 == 0
+        @test K(β)^3 + 2K(β) + 1 == 0
+        @test γ^7 == 2
 
         @test α + β == β + α
         @test α + β + γ == γ + β + α
