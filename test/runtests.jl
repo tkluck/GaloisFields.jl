@@ -74,4 +74,15 @@ using GaloisFields
         @test α + β == β + α
         @test α + β + γ == γ + β + α
     end
+
+    @testset "Iterations" begin
+        I = @GaloisField ℤ/2ℤ
+        J = @GaloisField ℤ/3ℤ
+        F = @GaloisField! 𝔽₂ α^2 + α + 1
+        G = @GaloisField! 𝔽₅ α^2 - 2
+        H = @GaloisField! G   β^3 + β + 1
+        for Q in [I, J, F, G, H]
+            @test all(x -> iszero(x) || x * inv(x) == 1, Q)
+        end
+    end
 end

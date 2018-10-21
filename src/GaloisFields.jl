@@ -21,6 +21,7 @@ using Polynomials: Poly, coeffs
 import Base: zero, one, +, -, *, /, //, inv, iszero
 import Base: show
 import Base: convert, promote_rule, promote_type, eltype
+import Base: iterate
 
 """
     abstract type AbstractGaloisField <: Number end
@@ -48,6 +49,7 @@ char(::Type{<:Integer}) = 0
 include("PrimeFields.jl")
 include("ExtensionFields.jl")
 include("Conversions.jl")
+include("Iterations.jl")
 include("Display.jl")
 
 """
