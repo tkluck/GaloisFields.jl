@@ -64,7 +64,7 @@ using Polynomials: Poly, coeffs
 # imports for overloading
 import Base: zero, one, +, -, *, /, //, inv
 import Base: show
-import Base: convert, promote_rule, promote_type
+import Base: convert, promote_rule, promote_type, eltype
 
 """
     abstract type AbstractGaloisField <: Number end
@@ -92,6 +92,7 @@ char(::Type{<:Integer}) = 0
 
 include("PrimeFields.jl")
 include("ExtensionFields.jl")
+include("Conversions.jl")
 
 """
     F = GaloisField(p)
@@ -160,9 +161,6 @@ macro GaloisField!(expr, minpoly)
         EF, $(esc(poly.var)) = $GaloisField(F, $poly)
         EF
     end
-end
-
-macro identify(expr)
 end
 
 
