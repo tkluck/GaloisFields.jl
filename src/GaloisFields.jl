@@ -62,7 +62,7 @@ module GaloisFields
 using Polynomials: Poly, coeffs
 
 # imports for overloading
-import Base: zero, one, +, -, *, /, //, inv
+import Base: zero, one, +, -, *, /, //, inv, iszero
 import Base: show
 import Base: convert, promote_rule, promote_type, eltype
 

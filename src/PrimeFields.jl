@@ -33,6 +33,8 @@ inv(a::F)     where F<:PrimeField = F(Reduced(), invmod(a.n, char(F)))
 /(a::F,b::F)  where F<:PrimeField = a * inv(b)
 //(a::F,b::F) where F<:PrimeField = a * inv(b)
 
+iszero(a::PrimeField) = iszero(a.n)
+
 show(io::IO, a::PrimeField) = show(io, a.n)
 function show(io::IO, ::Type{PrimeField{I,p}}) where {I,p}
     number = replace("$p", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])

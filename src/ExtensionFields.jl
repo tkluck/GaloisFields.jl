@@ -28,6 +28,8 @@ gen( T::Type{<:ExtensionField}) = T(ntuple(i -> i == 2 ? one(basefield(T)) : zer
 +(a::ExtensionField) = copy(a)
 -(a::ExtensionField) = typeof(a)(.-a.n)
 
+iszero(a::ExtensionField) = all(iszero, a.n)
+
 # -----------------------------------------------------------------------------
 #
 # The interesting extension field operations: multiplication and division

@@ -14,6 +14,10 @@ using GaloisFields
         @test F(35) / F(35) == 1
         @test F(34) // F(34) == 1
         @test F(34) // F(16) * F(16) == 34
+
+        @test zero(F) + one(F) == 1
+        @test iszero(zero(F))
+        @test iszero(char(F) * one(F))
     end
 
     @testset "Extensions of 𝔽₃" begin
