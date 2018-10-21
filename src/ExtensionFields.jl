@@ -104,7 +104,7 @@ function inv(a::F) where F <: ExtensionField
     coeffs = collect(a.n)
     d, u, v = _gcdx(coeffs, collect(minpoly(F)))
     if iszero(d[1]) || any(!iszero(d[2:end]))
-        throw(DivideError("$a is not invertible in $F"))
+        throw("$a is not invertible in $F")
     end
     u ./= d[1]
     return F(ntuple(i -> u[i], n(F)))
