@@ -28,8 +28,6 @@ matrix:
 #script:
 #  - julia -e 'Pkg.clone(pwd()); Pkg.build("PolynomialRings"); Pkg.test("PolynomialRings"; coverage=true)'
 after_success:
-  # push coverage results to Coveralls
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
   - julia --project docs/make.jl
