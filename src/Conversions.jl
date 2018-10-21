@@ -72,3 +72,8 @@ end
         throw(InexactError("Cannot convert $x to $T"))
     end
 end
+
+(E::Type{PrimeField{I,p}})(n::PrimeField) where {I, p} = convert(E, n)
+(E::Type{ExtensionField{F, N, α, MinPoly}})(n::PrimeField) where {F, N, α, MinPoly} = convert(E, n)
+(E::Type{PrimeField{I,p}})(n::ExtensionField) where {I, p} = convert(E, n)
+(E::Type{ExtensionField{F, N, α, MinPoly}})(n::ExtensionField) where {F, N, α, MinPoly} = convert(E, n)

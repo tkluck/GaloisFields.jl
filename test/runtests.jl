@@ -34,6 +34,7 @@ using GaloisFields
         @test (1 - α) // (1 + α) == 2α
 
         @test α + β == 0
+        @test H(α) + β == 0
     end
 
     @testset "Extensions of 𝔽₂" begin
@@ -50,5 +51,6 @@ using GaloisFields
         @test (1 + α) // α == α
 
         @test α - β == 1
+        @test H(α) - β == 1
     end
 end

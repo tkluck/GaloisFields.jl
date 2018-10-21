@@ -128,5 +128,5 @@ function convert(F::Type{<:ExtensionField}, i::Integer)
     F(ntuple(j -> j == 1 ? k(i) : zero(k), n(F)))
 end
 
+(::Type{F})(n::F) where F<:ExtensionField = F(n.n)
 convert(::Type{F}, n::F) where F<:ExtensionField = n
-(::Type{F})(n::F) where F<:ExtensionField = n
