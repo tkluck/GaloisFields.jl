@@ -11,6 +11,8 @@ A module for finite fields. Synopsis:
     F, β = GaloisField(3, :β => [2, 1, 1])
     F = @GaloisField! 𝔽₃ β^2 + β + 2
 
+    F(2) + F(1) == 0
+
 See the docstrings for `GaloisField`, `@GaloisField`, and `@GaloisField!` for details.
 """
 module GaloisFields
