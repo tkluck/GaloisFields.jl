@@ -90,9 +90,9 @@ end
             return quote
                 # cannot use closures in an @generated function body.
                 # This is why we don't just have
-                #     mapreduce((c, p) -> c * p, +, zip(x.n, $powers))
+                #     mapreduce((c, p) -> c * p, +, zip(expansion(x), $powers))
                 res = zero(K)
-                for (c, p) in zip(x.n, $powers)
+                for (c, p) in zip(expansion(x), $powers)
                     res += c * p
                 end
                 return res

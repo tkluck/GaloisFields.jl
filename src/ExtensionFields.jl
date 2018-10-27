@@ -15,6 +15,8 @@ n(::Type{ExtensionField{F, N, α, MinPoly}})         where {F, N, α, MinPoly} =
 genname(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} = α
 minpoly(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} = MinPoly
 
+expansion(a::ExtensionField) = a.n
+
 # -----------------------------------------------------------------------------
 #
 # Addition and substraction
