@@ -102,12 +102,11 @@ function *(a::F, b::F) where F <: ExtensionField
 end
 
 function inv(a::F) where F <: ExtensionField
+    iszero(a) && throw(DivideError())
     N = n(F)
     coeffs = collect(a.n)
     d, u, v = _gcdx(coeffs, collect(minpoly(F)))
-    if iszero(d[1]) || any(!iszero(d[2:end]))
-        throw("$a is not invertible in $F")
-    end
+    @assert !iszero(d[1]) && all(iszero, @view d[2:end])
     u ./= d[1]
     return F(ntuple(i -> u[i], n(F)))
 end
