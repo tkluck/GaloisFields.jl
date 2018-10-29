@@ -3,7 +3,7 @@
 
 Algebraic extension of a finite field ``F`` of degree ``N``.
 """
-struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly} <: AbstractGaloisField
+struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly} <: AbstractExtensionField
     n::NTuple{N, F}
     ExtensionField{F, N, α, MinPoly}(n::NTuple{N, F}) where
         {F <: AbstractGaloisField, N, α, MinPoly} = new(n)

@@ -33,6 +33,13 @@ A type representing finite fields.
 abstract type AbstractGaloisField <: Number end
 
 """
+    abstract type AbstractExtensionField <: AbstractGaloisField end
+
+A type representing a finite extension of an underlying finite field.
+"""
+abstract type AbstractExtensionField <: AbstractGaloisField end
+
+"""
     Reduced()
 
 A helper singleton used for asserting that an input value
@@ -50,6 +57,7 @@ char(::Type{<:Integer}) = 0
 
 include("PrimeFields.jl")
 include("ExtensionFields.jl")
+include("BinaryFields.jl")
 include("Conversions.jl")
 include("Iterations.jl")
 include("Display.jl")
@@ -97,6 +105,30 @@ function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:Abs
     sym, coeffs = minpoly
     mp = tuple(map(F, coeffs)...)
     N = length(coeffs) - 1
+    if char(F) == 2 && F <: PrimeField
+        I = if N <= 8
+            UInt8
+        elseif N <= 16
+            UInt16
+        elseif N <= 32
+            UInt32
+        elseif N <= 64
+            UInt64
+        elseif N <= 128
+            UInt128
+        else
+            # fall through to ExtensionField
+            nothing
+        end
+        if I !== nothing
+            minpolymask = zero(I)
+            for (i, c) in enumerate(mp)
+                minpolymask |= (c.n << (i - 1)) % I
+            end
+            BF = BinaryField{I, N, sym, minpolymask}
+            return BF, gen(BF)
+        end
+    end
     EF = ExtensionField{F, N, sym, mp}
     return EF, gen(EF)
 end

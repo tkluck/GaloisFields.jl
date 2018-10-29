@@ -13,3 +13,9 @@ function iterate(K::Type{<:ExtensionField}, state)
     it == nothing && return nothing
     return K(it[1]), it[2]
 end
+
+iterate(K::Type{<:BinaryField}) = K(Bits(), 0), 1
+iterate(K::Type{<:BinaryField}, state) = state < 2^n(K) ? (K(Bits(), state), state + 1) : nothing
+
+Base.IteratorSize(::Type{<:AbstractGaloisField}) = Base.HasLength()
+Base.length(F::Type{<:AbstractGaloisField}) = char(F)^n(F)

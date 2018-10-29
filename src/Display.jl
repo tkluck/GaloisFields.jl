@@ -38,10 +38,10 @@ function show(io::IO, t::Type{PrimeField{I,p}}) where {I,p}
 end
 
 
-function show(io::IO, t::Type{<:ExtensionField{F,N}}) where {F,N}
-    !isconcretetype(t) && return defaultshow(io, t)
-    
-    q = char(F) ^ N
+function show(io::IO, F::Type{<:AbstractExtensionField})
+    !isconcretetype(F) && return defaultshow(io, F)
+
+    q = char(F) ^ n(F)
     number = replace("$q", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])
     write(io, "𝔽$number")
 end

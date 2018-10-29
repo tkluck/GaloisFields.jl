@@ -23,7 +23,7 @@ function promote_rule(::Type{K}, ::Type{L}) where K <: PrimeField{I} where L <: 
     end
 end
 
-function promote_rule(::Type{K}, ::Type{L}) where K <: ExtensionField where L <: PrimeField
+function promote_rule(::Type{K}, ::Type{L}) where K <: AbstractExtensionField where L <: PrimeField
     if char(K) == char(L)
         # TODO: should possibly extend the integer type, as well
         return K
@@ -32,11 +32,12 @@ function promote_rule(::Type{K}, ::Type{L}) where K <: ExtensionField where L <:
     end
 end
 
-_upgrade(F::Type{<:ExtensionField}, i::AbstractGaloisField) = _upgrade(F, _upgrade(basefield(F), i))
+_upgrade(F::Type{<:AbstractExtensionField}, i::AbstractGaloisField) = _upgrade(F, _upgrade(basefield(F), i))
 _upgrade(F::Type{<:ExtensionField{K}}, i::K) where
     K <: AbstractGaloisField =
     F(ntuple(j -> j == 1 ? i : zero(K), n(F)))
-
+_upgrade(F::Type{<:BinaryField}, i::PrimeField{I, 2}) where I =
+    F(Bits(), i.n)
 
 function convert(K::Type{<:AbstractGaloisField}, x::PrimeField)
     if char(K) == char(typeof(x))
@@ -46,7 +47,7 @@ function convert(K::Type{<:AbstractGaloisField}, x::PrimeField)
     end
 end
 
-@generated function promote_rule(::Type{K}, ::Type{L}) where K <: ExtensionField where L <: ExtensionField
+@generated function promote_rule(::Type{K}, ::Type{L}) where K <: AbstractExtensionField where L <: AbstractExtensionField
     if K == L
         return quote
             return K
@@ -73,7 +74,7 @@ end
     end
 end
 
-@generated function convert(::Type{K}, x::L) where K <: ExtensionField where L <: ExtensionField
+@generated function convert(::Type{K}, x::L) where K <: AbstractExtensionField where L <: AbstractExtensionField
     if K == L
         return quote
             return x
@@ -105,8 +106,12 @@ end
     end
 end
 
-(E::Type{ExtensionField{F, N, α, MinPoly}})(n::Integer) where {F, N, α, MinPoly} = convert(E, n)
-(E::Type{PrimeField{I,p}})(n::PrimeField) where {I, p} = convert(E, n)
-(E::Type{ExtensionField{F, N, α, MinPoly}})(n::PrimeField) where {F, N, α, MinPoly} = convert(E, n)
-(E::Type{PrimeField{I,p}})(n::ExtensionField) where {I, p} = convert(E, n)
-(E::Type{ExtensionField{F, N, α, MinPoly}})(n::ExtensionField) where {F, N, α, MinPoly} = convert(E, n)
+for to in [BinaryField, ExtensionField]
+    @eval (E::Type{<:$to})(n::Integer) = convert(E, n)
+end
+
+for to in [PrimeField, BinaryField, ExtensionField]
+    for from in [PrimeField, BinaryField, ExtensionField]
+        @eval (E::Type{<:$to})(n::$from) = convert(E, n)
+    end
+end
