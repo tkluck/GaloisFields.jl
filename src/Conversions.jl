@@ -15,9 +15,9 @@ macro identify(expr)
     end
 end
 
-function promote_rule(::Type{K}, ::Type{L}) where K <: PrimeField where L <: PrimeField
+function promote_rule(::Type{K}, ::Type{L}) where K <: PrimeField{I} where L <: PrimeField{I} where I
     if char(K) == char(L)
-        return PrimeField{promote_type(eltype(K), eltype(L)), char(L)}
+        return PrimeField{I, char(L)}
     else
         return Union{}
     end

@@ -11,7 +11,6 @@ struct PrimeField{I<:Integer, p} <: AbstractGaloisField
 end
 
 char(::Type{PrimeField{I,p}}) where {I, p} = p
-eltype(::Type{PrimeField{I,p}}) where {I, p} = I
 
 # -----------------------------------------------------------------------------
 #
