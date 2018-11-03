@@ -66,8 +66,9 @@ an operation like
 G(β)
 ```
 will throw an error. The mathematical reason is that  the fields ``F`` and ``G``
-are isomorphic, but not canonically. To choose an identification, you can use
-the `@identify` macro (which is not exported by default):
+are isomorphic, but there is two different isomorphisms. ("They are not _canonically_
+isomorphic.") To choose an identification, you can use the `@identify` macro
+(which is not exported by default, so we use its full path):
 ```julia
 @GaloisFields.identify β => γ^2
 @GaloisFields.identify γ => β^2
