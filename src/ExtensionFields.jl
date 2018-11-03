@@ -3,17 +3,18 @@
 
 Algebraic extension of a finite field ``F`` of degree ``N``.
 """
-struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly} <: AbstractExtensionField
+struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly, Conway} <: AbstractExtensionField
     n::NTuple{N, F}
-    ExtensionField{F, N, α, MinPoly}(n::NTuple{N, F}) where
-        {F <: AbstractGaloisField, N, α, MinPoly} = new(n)
+    ExtensionField{F, N, α, MinPoly, Conway}(n::NTuple{N, F}) where
+        {F <: AbstractGaloisField, N, α, MinPoly, Conway} = new(n)
 end
 
-basefield(::Type{ExtensionField{F, N, α, MinPoly}}) where {F, N, α, MinPoly} = F
-char(::Type{ExtensionField{F, N, α, MinPoly}})      where {F, N, α, MinPoly} = char(F)
-n(::Type{ExtensionField{F, N, α, MinPoly}})         where {F, N, α, MinPoly} = N
-genname(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} = α
-minpoly(::Type{ExtensionField{F, N, α, MinPoly}})   where {F, N, α, MinPoly} = MinPoly
+basefield(::Type{ExtensionField{F, N, α, MinPoly, Conway}}) where {F, N, α, MinPoly, Conway} = F
+char(::Type{ExtensionField{F, N, α, MinPoly, Conway}})      where {F, N, α, MinPoly, Conway} = char(F)
+n(::Type{ExtensionField{F, N, α, MinPoly, Conway}})         where {F, N, α, MinPoly, Conway} = N
+genname(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = α
+minpoly(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = MinPoly
+isconway(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = Conway
 
 expansion(a::ExtensionField) = a.n
 

@@ -57,6 +57,17 @@ end
             return K
         end
     elseif char(K) == char(L)
+        if isconway(K) && isconway(L)
+            if n(K) % n(L) == 0
+                return quote
+                    return K
+                end
+            else
+                return quote
+                    return Union{}
+                end
+            end
+        end
         sym = genname(L)
         if (sym, K) in keys(identifications)
             return quote
@@ -84,22 +95,32 @@ end
             return $_upgrade(K, x)
         end
     elseif char(K) == char(L)
-        sym = genname(L)
-        if (sym, K) in keys(identifications)
-            target = identifications[sym, K]
-            powers = map(i -> target^(i-1), 1:n(L))
-            return quote
-                # cannot use closures in an @generated function body.
-                # This is why we don't just have
-                #     mapreduce((c, p) -> c * p, +, zip(expansion(x), $powers))
-                res = zero(K)
-                for (c, p) in zip(expansion(x), $powers)
-                    res += c * p
-                end
-                return res
+        if isconway(K) && isconway(L)
+            if n(K) % n(L) == 0
+                p = char(K)
+                m = (p^n(K) - 1) ÷ (p^n(L) - 1)
+                target = gen(K)^m
+            else
+                throw("There is no inclusion from $L to $K")
             end
         else
-            throw("Cannot convert $x to $K; use @GaloisFields.identify $sym => <target> to define the conversion")
+            sym = genname(L)
+            if (sym, K) in keys(identifications)
+                target = identifications[sym, K]
+            else
+                throw("Cannot convert $x to $K; use @GaloisFields.identify $sym => <target> to define the conversion")
+            end
+        end
+        powers = map(i -> target^(i-1), 1:n(L))
+        return quote
+            # cannot use closures in an @generated function body.
+            # This is why we don't just have
+            #     mapreduce((c, p) -> c * p, +, zip(expansion(x), $powers))
+            res = zero(K)
+            for (c, p) in zip(expansion(x), $powers)
+                res += c * p
+            end
+            return res
         end
     else
         throw("Cannot convert $x to $K")

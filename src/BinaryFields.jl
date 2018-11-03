@@ -2,17 +2,18 @@
 # takes a bit pattern and the constructor that takes an Integer value (to be
 # interpreted mod 2).
 struct Bits end
-struct BinaryField{I <: Unsigned, N, α, MinPolyMask} <: AbstractExtensionField
+struct BinaryField{I <: Unsigned, N, α, MinPolyMask, Conway} <: AbstractExtensionField
     n::I
-    BinaryField{I, N, α, MinPolyMask}(::Bits, n) where
-        {I <: Unsigned, N, α, MinPolyMask} = new(n)
+    BinaryField{I, N, α, MinPolyMask, Conway}(::Bits, n) where
+        {I <: Unsigned, N, α, MinPolyMask, Conway} = new(n)
 end
 
-basefield(::Type{BinaryField{I, N, α, MinPolyMask}})   where {I, N, α, MinPolyMask} = GaloisField(2)
-char(::Type{BinaryField{I, N, α, MinPolyMask}})        where {I, N, α, MinPolyMask} = 2
-n(::Type{BinaryField{I, N, α, MinPolyMask}})           where {I, N, α, MinPolyMask} = N
-genname(::Type{BinaryField{I, N, α, MinPolyMask}})     where {I, N, α, MinPolyMask} = α
-minpolymask(::Type{BinaryField{I, N, α, MinPolyMask}}) where {I, N, α, MinPolyMask} = MinPolyMask
+basefield(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})   where {I, N, α, MinPolyMask, Conway} = GaloisField(2)
+char(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})        where {I, N, α, MinPolyMask, Conway} = 2
+n(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})           where {I, N, α, MinPolyMask, Conway} = N
+genname(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})     where {I, N, α, MinPolyMask, Conway} = α
+minpolymask(::Type{BinaryField{I, N, α, MinPolyMask, Conway}}) where {I, N, α, MinPolyMask, Conway} = MinPolyMask
+isconway(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})    where {I, N, α, MinPolyMask, Conway} = Conway
 
 struct CoeffsIter{B <: BinaryField}
     x::B

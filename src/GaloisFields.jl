@@ -8,6 +8,11 @@ A module for finite fields. Synopsis:
     F = @GaloisField ℤ/3ℤ
     F = @GaloisField 𝔽₃
 
+    F, β = GaloisField(9)
+    F = @GaloisField! 9 β
+    F = @GaloisField! 3^2 β
+    F = @GaloisField! 𝔽₉ β
+
     F, β = GaloisField(3, :β => [2, 1, 1])
     F = @GaloisField! 𝔽₃ β^2 + β + 2
 
@@ -17,7 +22,10 @@ See the docstrings for `GaloisField`, `@GaloisField`, and `@GaloisField!` for de
 """
 module GaloisFields
 
-using Polynomials: Poly, coeffs
+import Serialization: deserialize
+
+import Polynomials: Poly, coeffs
+import Primes: factor, Factorization
 
 # imports for overloading
 import Base: zero, one, +, -, *, /, //, inv, iszero
@@ -65,6 +73,7 @@ include("Display.jl")
 """
     F = GaloisField(p)
     F,α = GaloisField(p, :β => [1, 0, 1])
+    F,α = GaloisField(p, n, :β)
 
 Return a type representing a finite field.
 
@@ -74,7 +83,14 @@ The two-arguments signature returns an algebraic extension of that field,
 with minimum polynomial given by the second argument: a dense representation
 of the univariate, monic polynomial, with ascending degree.
 
-Note that in the latter case, the variable name (e.g. β above) is part of the
+The three-arguments signature returns an algebraic extension of that field,
+with minimum polynomial equal to the
+[Conway polynomial](https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields))
+ for ``(p,n)``. The `GaloisFields` package ships with a database of Conway
+ polynomials and will raise an error if it does not contain an entry for
+ ``(p,n)``.
+
+Note that in the latter two cases, the variable name (e.g. β above) is part of the
 type. This lets you define identifications between isomorphic (sub)fields. For
 example, with the following definition
 
@@ -91,17 +107,17 @@ to allow for conversions like
 
     G(β)
     convert(F, γ + 1)
+
+In the Conway case, you do not have to define your own identifications, as
+the Conway polynomials satisfy compatibility relations that allow us to use
+certain distinguished inclusions between them.
 """
-function GaloisField(p::Integer)
-    if p > 1
-        return PrimeField{typeof(p), p}
-    else
-        throw("Cannot create GaloisField($p)")
-    end
-end
-GaloisField(p::Integer, args...) = GaloisField(GaloisField(p), args...)
+function GaloisField end
+
+GaloisField(p::Integer, minpoly::Poly) = GaloisField(GaloisField(p, 1), minpoly)
+GaloisField(p::Integer, minpoly::Pair) = GaloisField(GaloisField(p, 1), minpoly)
 GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Poly) = GaloisField(F, minpoly.var => coeffs(minpoly))
-function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:AbstractVector{<:Number}})
+function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:AbstractVector{<:Number}}, conway=false)
     sym, coeffs = minpoly
     mp = tuple(map(F, coeffs)...)
     N = length(coeffs) - 1
@@ -125,40 +141,88 @@ function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:Abs
             for (i, c) in enumerate(mp)
                 minpolymask |= (c.n << (i - 1)) % I
             end
-            BF = BinaryField{I, N, sym, minpolymask}
+            BF = BinaryField{I, N, sym, minpolymask, conway}
             return BF, gen(BF)
         end
     end
-    EF = ExtensionField{F, N, sym, mp}
+    EF = ExtensionField{F, N, sym, mp, conway}
     return EF, gen(EF)
 end
+
+const DATAFILE = joinpath(@__DIR__, "..", "deps", "conwaypolynomials.data")
+_conwaypolynomials = nothing
+function conwaypolynomial(p::Integer, n::Integer)
+    global _conwaypolynomials
+    if _conwaypolynomials == nothing
+        _conwaypolynomials = deserialize(open(DATAFILE))
+    end
+    return _conwaypolynomials[p, n]
+end
+
+GaloisField(q::Integer) = GaloisField(factor(q))
+GaloisField(p::Integer, n::Integer) = GaloisField(p, n, gensym())
+GaloisField(factors::Factorization) = GaloisField(factors, gensym())
+
+function GaloisField(p::Integer, n::Integer, sym::Symbol)
+    𝔽ₚ = PrimeField{typeof(p), p}
+    if n == 1
+        return 𝔽ₚ
+    else
+        coeffs = conwaypolynomial(p, n)
+        return GaloisField(𝔽ₚ, sym => map(𝔽ₚ, coeffs), true)
+    end
+end
+
+function GaloisField(factors::Factorization, sym::Symbol)
+    if length(factors) != 1
+        throw("There is no finite field of order $(prod(f))")
+    end
+    (p, n), = factors
+    return GaloisField(p, n, sym)
+end
+
 
 """
     F = @GaloisField 3
     F = @GaloisField ℤ/3ℤ
     F = @GaloisField 𝔽₃
+    F,α = @GaloisField 3^2
 
-Different ways of defining a finite field of a given order.
+Different ways of defining a finite field.
+
+For defining a Galois field of prime power order with ``n>1``, consider using
+`@GaloisField!` instead, which allows specifying the display name of the
+generator.
 """
 macro GaloisField(expr)
     res = _parse_declaration(expr)
     if res === nothing
         throw("Not implemented: @GaloisField $expr")
     end
-    return res
+    return GaloisField(res)
+end
+
+function _factorization(p::Integer, n::Integer)
+    return Factorization{Int}(Dict(p => n))
 end
 
 function _parse_declaration(expr)
-    # @GaloisField p
+    # @GaloisField q
     if expr isa Integer
-        return :( $GaloisField($expr) )
+        return expr
     elseif expr isa Expr
         # @GaloisField ℤ/pℤ
         if expr.head == :call && expr.args[1] == :/ &&
             expr.args[2] == :ℤ && expr.args[3].head == :call &&
             expr.args[3].args[1] == :* && expr.args[3].args[3] == :ℤ
             p = expr.args[3].args[2]
-            return :( $GaloisField($p) )
+            factors = _factorization(p, 1)
+            return factors
+        elseif expr.head == :call && expr.args[1] == :^ &&
+            expr.args[2] isa Integer && expr.args[3] isa Integer
+            p, n = expr.args[2:end]
+            factors = _factorization(p, n)
+            return factors
         end
     # @GaloisField 𝔽₃₇
     elseif expr isa Symbol
@@ -166,11 +230,11 @@ function _parse_declaration(expr)
         if str[1] == '𝔽'
             s = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
             indices = indexin(str[2:end], s)
-            p = 0
+            q = 0
             for ix in indices
-                p = 10p + ix - 1
+                q = 10q + ix - 1
             end
-            return :( $GaloisField($p) )
+            return q
         end
     end
     return nothing
@@ -185,6 +249,7 @@ end
 """
     G = @GaloisField! 3 β^2 + 1
     G = @GaloisField! 𝔽₃ β^2 + 1
+    G = @GaloisField! 3^2 β
     K = GaloisField(3)
     G = @GaloisField! K β^2 + 1
 
@@ -210,11 +275,17 @@ to allow for conversions like
     convert(F, γ + 1)
 """
 macro GaloisField!(expr, minpoly)
-    poly = @eval $(_parsepoly(minpoly))
+    if minpoly isa Symbol
+        poly = QuoteNode(minpoly)
+        sym = minpoly
+    else
+        poly = @eval $(_parsepoly(minpoly))
+        sym = poly.var
+    end
     decl = _parse_declaration(expr)
     F = something(decl, esc(expr))
     quote
-        EF, $(esc(poly.var)) = $GaloisField($F, $poly)
+        EF, $(esc(sym)) = $GaloisField($F, $poly)
         EF
     end
 end

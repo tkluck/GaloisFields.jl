@@ -85,4 +85,21 @@ using GaloisFields
             @test all(x -> iszero(x) || x * inv(x) == 1, Q)
         end
     end
+
+    @testset "Conway polynomial database" begin
+        K = @GaloisField! 29^4 α
+        @test α^(29^4) == α
+        L = @GaloisField! 29^2 β
+
+        # Conway polynomials' compatibility conditions give a commutative
+        # diagram of inclusions between them
+        @test β == α^((29^4 - 1)÷(29^2 - 1))
+
+        # same tests, but now employ Primes to factorize q
+        # at construction time
+        K,α = GaloisField(29^4)
+        @test α^(29^4) == α
+        L,β = GaloisField(29^2)
+        @test β == α^((29^4 - 1)÷(29^2 - 1))
+    end
 end
