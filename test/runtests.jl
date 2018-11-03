@@ -101,5 +101,9 @@ using GaloisFields
         @test α^(29^4) == α
         L,β = GaloisField(29^2)
         @test β == α^((29^4 - 1)÷(29^2 - 1))
+
+        M = @GaloisField! 81 γ
+        N = @GaloisField! 9 δ
+        @test γ^10 == δ
     end
 end

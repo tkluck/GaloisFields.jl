@@ -160,6 +160,7 @@ function conwaypolynomial(p::Integer, n::Integer)
 end
 
 GaloisField(q::Integer) = GaloisField(factor(q))
+GaloisField(q::Integer, sym::Symbol) = GaloisField(factor(q), sym)
 GaloisField(p::Integer, n::Integer) = GaloisField(p, n, gensym())
 GaloisField(factors::Factorization) = GaloisField(factors, gensym())
 
