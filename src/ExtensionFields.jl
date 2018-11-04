@@ -90,7 +90,7 @@ function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
     return (a, s0, t0)
 end
 
-function *(a::F, b::F) where F <: ExtensionField
+function *(::Direct, a::F, b::F) where F <: ExtensionField
     N = n(F)
     coeffs = zeros(basefield(F), 2N - 1)
     for (i, a_i) in enumerate(a.n)
@@ -102,7 +102,7 @@ function *(a::F, b::F) where F <: ExtensionField
     return F(ntuple(i -> coeffs[i], n(F)))
 end
 
-function inv(a::F) where F <: ExtensionField
+function inv(::Direct, a::F) where F <: ExtensionField
     iszero(a) && throw(DivideError())
     N = n(F)
     coeffs = collect(a.n)
@@ -112,8 +112,15 @@ function inv(a::F) where F <: ExtensionField
     return F(ntuple(i -> u[i], n(F)))
 end
 
-/(a::F, b::F)  where F <: ExtensionField = a * inv(b)
-//(a::F, b::F) where F <: ExtensionField = a * inv(b)
+/(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
+//(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
+^(::Direct, a::F, n::Integer) where F <: ExtensionField = Base.power_by_squaring(a, n)
+
+*(a::F, b::F)       where F <: ExtensionField = zech_op(F, *, a, b)
+/(a::F, b::F)       where F <: ExtensionField = zech_op(F, /, a, b)
+//(a::F, b::F)      where F <: ExtensionField = zech_op(F, //, a, b)
+^(a::F, n::Integer) where F <: ExtensionField = zech_op(F, ^, a, n)
+inv(a::F)           where F <: ExtensionField = zech_op(F, inv, a)
 
 # -----------------------------------------------------------------------------
 #

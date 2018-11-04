@@ -7,7 +7,7 @@ import Polynomials: Poly, coeffs
 import Primes: factor, Factorization
 
 # imports for overloading
-import Base: zero, one, +, -, *, /, //, inv, iszero
+import Base: zero, one, +, -, *, /, //, ^, inv, iszero
 import Base: show
 import Base: convert, promote_rule, promote_type, eltype
 import Base: iterate
@@ -43,6 +43,7 @@ char(::Type{<:Rational{<:Integer}}) = 0
 char(::Type{<:Integer}) = 0
 
 include("PrimeFields.jl")
+include("ZechLog.jl")
 include("ExtensionFields.jl")
 include("BinaryFields.jl")
 include("Conversions.jl")

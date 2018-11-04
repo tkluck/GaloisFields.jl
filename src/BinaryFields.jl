@@ -69,7 +69,7 @@ function carrylessmul(a::I, b::I) where I <: Integer
     return res
 end
 
-function *(a::F, b::F) where F <: BinaryField{I} where I
+function *(::Direct, a::F, b::F) where F <: BinaryField{I} where I
     N = n(F)
     c = carrylessmul(a.n, b.n)
     J = typeof(c)
@@ -110,7 +110,7 @@ function _gcdx(::Bits, a::I, b::I) where I <: Unsigned
     return (a, s0, t0)
 end
 
-function inv(a::F) where F <: BinaryField{I} where I
+function inv(::Direct, a::F) where F <: BinaryField{I} where I
     iszero(a) && throw(DivideError())
     N = n(F)
     # the minimum polynomial is (1 << N) | minpolymask(F)
@@ -129,8 +129,15 @@ function inv(a::F) where F <: BinaryField{I} where I
     return F(Bits(), u % I)
 end
 
-/(a::F, b::F)  where F <: BinaryField = a * inv(b)
-//(a::F, b::F) where F <: BinaryField = a * inv(b)
+/(::Direct, a::F, b::F)  where F <: BinaryField = a * inv(b)
+//(::Direct, a::F, b::F) where F <: BinaryField = a * inv(b)
+^(::Direct, a::F, n::Integer) where F <: BinaryField = Base.power_by_squaring(a, n)
+
+*(a::F, b::F)       where F <: BinaryField = zech_op(F, *, a, b)
+/(a::F, b::F)       where F <: BinaryField = zech_op(F, /, a, b)
+//(a::F, b::F)      where F <: BinaryField = zech_op(F, //, a, b)
+^(a::F, n::Integer) where F <: BinaryField = zech_op(F, ^, a, n)
+inv(a::F)           where F <: BinaryField = zech_op(F, inv, a)
 
 # -----------------------------------------------------------------------------
 #

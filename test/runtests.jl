@@ -121,4 +121,15 @@ using GaloisFields
         @GaloisField! 17^2 y
         x^3 + x == y^3 + y
     end
+
+    @testset "Zech logarithms" begin
+        F = @GaloisField! 3^8 x
+        G = @GaloisField! 3^8 y
+
+        GaloisFields.enable_zech_multiplication(F)
+        GaloisFields.disable_zech_multiplication(G)
+
+        @test x^3 + x + 1 == y^3 + y + 1
+        @test (x^3 + x) / (x + 1) == (y^3 + y) / (y + 1)
+    end
 end

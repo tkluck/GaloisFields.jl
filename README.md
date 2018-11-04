@@ -54,6 +54,23 @@ G, β = GaloisField(3, 4, :β)      # same; avoid having to factorize 81
 F, β = GaloisField(3, :β => [2, 0, 0, 2, 1]) # same; pass our own custom minimum polynomial
 ```
 
+## Fast multiplications
+In some cases, we make use of [Zech's logarithms][zech] for faster multiplications.
+By default, this happens if the order of the field is less than ``2^16``, and if
+the primitive element is also a multiplicative generator. However,
+you can override this by calling either of
+
+```julia
+GaloisFields.enable_zech_multiplication(F)
+GaloisFields.disable_zech_multiplication(F)
+```
+
+_before_ doing any multiplication operation. If you call this function on a
+field whose primitive element is _not_ a multiplicative generator, this will
+throw a warning.
+
+[zech]: https://en.wikipedia.org/wiki/Zech's_logarithm
+
 ## Conversions
 If you specify your own minimum polynomial, we make no assumptions about
 conversions between fields. For example, when defining
