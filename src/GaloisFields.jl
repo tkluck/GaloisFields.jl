@@ -119,7 +119,7 @@ function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:Abs
         if I !== nothing
             minpolymask = zero(I)
             for (i, c) in enumerate(mp)
-                minpolymask |= (c.n << (i - 1)) % I
+                minpolymask |= (c.n % I) << (i - 1)
             end
             BF = BinaryField{I, N, sym, minpolymask, conway}
             return BF, gen(BF)
