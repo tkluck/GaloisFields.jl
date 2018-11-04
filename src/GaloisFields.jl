@@ -1,25 +1,4 @@
-"""
-    using GaloisFields
-
-A module for finite fields. Synopsis:
-
-    using GaloisFields
-    F = GaloisField(3)
-    F = @GaloisField ℤ/3ℤ
-    F = @GaloisField 𝔽₃
-
-    F, β = GaloisField(9)
-    F = @GaloisField! 9 β
-    F = @GaloisField! 3^2 β
-    F = @GaloisField! 𝔽₉ β
-
-    F, β = GaloisField(3, :β => [2, 1, 1])
-    F = @GaloisField! 𝔽₃ β^2 + β + 2
-
-    F(2) + F(1) == 0
-
-See the docstrings for `GaloisField`, `@GaloisField`, and `@GaloisField!` for details.
-"""
+@doc read(open(joinpath(@__DIR__, "..", "README.md")), String)
 module GaloisFields
 
 import Serialization: deserialize
