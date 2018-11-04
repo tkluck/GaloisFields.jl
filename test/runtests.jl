@@ -135,5 +135,14 @@ using GaloisFields
 
         @test x^3 + x + 1 == y^3 + y + 1
         @test (x^3 + x) / (x + 1) == (y^3 + y) / (y + 1)
+
+        H = @GaloisField! 2^20 x
+        K = @GaloisField! 2^20 y
+
+        GaloisFields.enable_zech_multiplication(H)
+        GaloisFields.disable_zech_multiplication(K)
+
+        @test x^100 + x + 1 == y^100 + y + 1
+        @test (x^100 + x) / (x + 1) == (y^100 + y) / (y + 1)
     end
 end
