@@ -15,9 +15,11 @@ macro identify(expr)
     end
 end
 
-function promote_rule(::Type{K}, ::Type{L}) where K <: PrimeField{I} where L <: PrimeField{I} where I
+function promote_rule(::Type{K}, ::Type{L}) where K <: PrimeField where L <: PrimeField
     if char(K) == char(L)
-        return PrimeField{I, char(L)}
+        p = char(K)
+        I = inttype(p)
+        return PrimeField{I, I(p)}
     else
         return Union{}
     end
@@ -25,7 +27,6 @@ end
 
 function promote_rule(::Type{K}, ::Type{L}) where K <: AbstractExtensionField where L <: PrimeField
     if char(K) == char(L)
-        # TODO: should possibly extend the integer type, as well
         return K
     else
         return Union{}

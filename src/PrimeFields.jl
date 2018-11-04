@@ -6,20 +6,30 @@ A type representing an element in ℤ/pℤ.
 """
 struct PrimeField{I<:Integer, p} <: AbstractGaloisField
     n::I
-    PrimeField{I, p}(n::I) where {I, p} = new(mod(n, p))
-    PrimeField{I, p}(::Reduced, n::I) where {I, p} = new(n)
+    PrimeField{I, p}(n::Integer) where {I, p} = new(mod(n, p))
+    PrimeField{I, p}(::Reduced, n::Integer) where {I, p} = new(n)
 end
 
-char(::Type{PrimeField{I,p}}) where {I, p} = p
-n(::Type{PrimeField{I,p}}) where {I, p} = 1
+char(::Type{PrimeField{I,p}})    where {I, p} = p
+n(::Type{PrimeField{I,p}})       where {I, p} = 1
+inttype(::Type{PrimeField{I,p}}) where {I, p} = I
+
+function inttype(p::Integer)
+    for I in [Int8, Int16, Int32, Int64, Int128]
+        if p <= typemax(I)
+            return I
+        end
+    end
+    return typeof(p)
+end
 
 # -----------------------------------------------------------------------------
 #
 # Arithmetic
 #
 # -----------------------------------------------------------------------------
-zero(F::Type{<:PrimeField{I}}) where I = F(zero(I))
-one( F::Type{<:PrimeField{I}}) where I = F(one(I))
+zero(F::Type{<:PrimeField}) = F(Reduced(), zero(inttype(F)))
+one( F::Type{<:PrimeField}) = F(Reduced(),  one(inttype(F)))
 
 +(a::F, b::F) where F<:PrimeField = F(a.n + b.n)
 -(a::F, b::F) where F<:PrimeField = F(a.n - b.n)
@@ -27,7 +37,7 @@ one( F::Type{<:PrimeField{I}}) where I = F(one(I))
 +(a::PrimeField) = a
 -(a::PrimeField) = typeof(a)(Reduced(), char(typeof(a)) - a.n)
 
-*(a::F, b::F) where F<:PrimeField = F(a.n * b.n)
+*(a::F, b::F) where F<:PrimeField = F(Base.widemul(a.n, b.n))
 
 inv(a::F)     where F<:PrimeField = F(Reduced(), invmod(a.n, char(F)))
 /(a::F,b::F)  where F<:PrimeField = a * inv(b)
@@ -41,7 +51,7 @@ iszero(a::PrimeField) = iszero(a.n)
 #
 # -----------------------------------------------------------------------------
 promote_rule(F::Type{<:PrimeField}, ::Type{<:Integer}) = F
-convert(F::Type{PrimeField{I,p}}, i::Integer) where {I,p} = F(Reduced(), I(mod(i, p)))
+convert(F::Type{<:PrimeField}, i::Integer) = F(i)
 
 (::Type{F})(n::F) where F<:PrimeField = F(n.n)
 convert(::Type{F}, n::F) where F<:PrimeField = n

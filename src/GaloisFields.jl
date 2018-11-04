@@ -165,7 +165,7 @@ GaloisField(p::Integer, n::Integer) = GaloisField(p, n, gensym())
 GaloisField(factors::Factorization) = GaloisField(factors, gensym())
 
 function GaloisField(p::Integer, n::Integer, sym::Symbol)
-    𝔽ₚ = PrimeField{typeof(p), p}
+    𝔽ₚ = PrimeField{inttype(p), p}
     if n == 1
         return 𝔽ₚ
     else

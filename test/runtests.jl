@@ -1,4 +1,5 @@
 using Test
+using Primes
 using GaloisFields
 
 @testset "GaloisFields" begin
@@ -18,6 +19,13 @@ using GaloisFields
         @test zero(F) + one(F) == 1
         @test iszero(zero(F))
         @test iszero(char(F) * one(F))
+
+        # test for correct handling of integer overflow
+        for I in [Int8, Int16, Int32, Int64, Int128]
+            p = prevprime(typemax(I))
+            G = GaloisField(p)
+            @test G(-1) * G(-1) == 1
+        end
     end
 
     @testset "Extensions of 𝔽₃" begin
