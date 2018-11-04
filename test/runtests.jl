@@ -121,9 +121,9 @@ using GaloisFields
         @GaloisField! 17^2 y
         x^3 + x == y^3 + y
 
-        # Rather big fields
+        # Rather big fields (make Int64 explicit for 32-bit platforms)
         @GaloisField! 2^50 z
-        @test z^(2^50) == z
+        @test z^(Int64(2)^50) == z
     end
 
     @testset "Zech logarithms" begin
