@@ -56,9 +56,9 @@ F, β = GaloisField(3, :β => [2, 0, 0, 2, 1]) # same; pass our own custom minim
 
 ## Fast multiplications
 In some cases, we make use of [Zech's logarithms][zech] for faster multiplications.
-By default, this happens if the order of the field is less than ``2^16``, and if
-the primitive element is also a multiplicative generator. However,
-you can override this by calling either of
+By default, this happens if the order of the field is less than ``2^16``, if the
+characteristic is not 2, and if the primitive element is also a multiplicative
+generator. However, you can override this by calling either of
 
 ```julia
 GaloisFields.enable_zech_multiplication(F)
