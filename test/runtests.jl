@@ -113,5 +113,12 @@ using GaloisFields
         M = @GaloisField! 81 γ
         N = @GaloisField! 9 δ
         @test γ^10 == δ
+
+        @test (2γ)^10 == 2^10 * δ
+
+        # Conway identification even with different variable names
+        @GaloisField! 17^2 x
+        @GaloisField! 17^2 y
+        x^3 + x == y^3 + y
     end
 end
