@@ -120,5 +120,9 @@ using GaloisFields
         @GaloisField! 17^2 x
         @GaloisField! 17^2 y
         x^3 + x == y^3 + y
+
+        # Rather big fields
+        @GaloisField! 2^50 z
+        @test z^(2^50) == z
     end
 end
