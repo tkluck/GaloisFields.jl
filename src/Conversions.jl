@@ -59,7 +59,11 @@ end
         end
     elseif char(K) == char(L)
         if isconway(K) && isconway(L)
-            if n(K) % n(L) == 0
+            if n(K) == n(L) && genname(K) < genname(L)
+                return quote
+                    return K
+                end
+            elseif n(K) > n(L) && n(K) % n(L) == 0
                 return quote
                     return K
                 end
