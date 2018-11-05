@@ -1,3 +1,19 @@
+"""
+    Direct()
+
+A helper singleton for arithmetic operations that benefit from a log-table.
+Field implementations implement e.g.
+
+    *(::Direct, a, b)
+
+and then define
+
+    *(a::F, b::F) = zech_op(F, *, a, b)
+
+This will use the `::Direct` implementation for computing a log table
+where appropriate, and will either use the log table or the `::Direct`
+implementation for computing results.
+"""
 struct Direct end
 
 logtables = IdDict()
