@@ -71,8 +71,10 @@ end
                         return K
                     end
                 else
+                    N = lcm(n(K), n(L))
+                    G, _ = GaloisField(char(K), N)
                     return quote
-                        return GaloisField(char(K), lcm(n(K),n(L)))[1]
+                        return $G
                     end
                 end
             else
