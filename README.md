@@ -114,8 +114,10 @@ relations between them, allowing conversions:
 ```julia
 β^10 == γ
 ```
-This only works if there is a subfield isomorphic to ``G`` in ``F``, which
-is the case exactly when the order of ``F`` is a power of the order of ``G``.
+This works provided `F` and `G` have the same characteristic `p`. If the order
+of either is a power of the other, we convert into the bigger field. If not, we
+convert both into the field of order `p^N`, where `N` is the least common
+multiple of the extension degrees of `F` and `G` over ℤ/pℤ.
 
 [conway]: https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)
 
