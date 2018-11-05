@@ -1,5 +1,3 @@
-struct IdentifiedVar{sym} end
-
 identifications = Dict()
 
 macro identify(expr)
