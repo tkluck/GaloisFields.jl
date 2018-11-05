@@ -63,9 +63,15 @@ end
                 return quote
                     return K
                 end
-            elseif n(K) > n(L) && n(K) % n(L) == 0
-                return quote
-                    return K
+            elseif n(K) > n(L)
+                if n(K) % n(L) == 0
+                    return quote
+                        return K
+                    end
+                else
+                    return quote
+                        return GaloisField(char(K), lcm(n(K),n(L)))[1]
+                    end
                 end
             else
                 return quote

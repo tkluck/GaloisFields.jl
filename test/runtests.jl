@@ -124,6 +124,12 @@ using GaloisFields
         # Rather big fields (make Int64 explicit for 32-bit platforms)
         @GaloisField! 2^50 z
         @test z^(Int64(2)^50) == z
+
+        # Include two different fields in the smallest one that contains both
+        @GaloisField! 2^4 x
+        @GaloisField! 2^6 z
+        @test x^((2^12 - 1)÷(2^6 - 1)) == z^((2^12 - 1)÷(2^4 - 1))
+
     end
 
     @testset "Zech logarithms" begin
