@@ -99,7 +99,10 @@ using GaloisFields
         F = @GaloisField! 𝔽₂ α^2 + α + 1
         G = @GaloisField! 𝔽₅ α^2 - 2
         H = @GaloisField! G   β^3 + β + 1
-        for Q in [I, J, F, G, H]
+        K = @GaloisField! 2^2 α
+        L = @GaloisField! 5^2 α
+        M = @GaloisField! 5^6 α
+        for Q in [I, J, F, G, H, K, L, M]
             @test all(x -> iszero(x) || x * inv(x) == 1, Q)
         end
     end

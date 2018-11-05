@@ -34,7 +34,7 @@ end
 
 function zech_op(logtable, exptable, n, ::typeof(inv), a)
     iszero(a) && throw(DivideError())
-    exptable[n - logtable[a]]
+    exptable[mod(-logtable[a], n)]
 end
 
 function zech_op(logtable, exptable, n, ::typeof(^), a, N)
