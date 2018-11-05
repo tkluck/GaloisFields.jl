@@ -64,6 +64,14 @@ using GaloisFields
 
         @test α - β == 1
         @test H(α) - β == 1
+
+        # test for correct handling of integer overflow
+        for n in [7:9; 15:17; 31:33; 63:65]
+            F, α = GaloisField(2, n)
+            @test  α^(n - 1) // α^(n - 1) == 1
+            @test  α^(n + 0) // α^(n + 0) == 1
+            @test  α^(n + 1) // α^(n + 1) == 1
+        end
     end
 
     @testset "Nested extension of 𝔽₂₉" begin

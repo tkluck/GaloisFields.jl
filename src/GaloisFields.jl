@@ -110,8 +110,6 @@ function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:Abs
             UInt32
         elseif N <= 64
             UInt64
-        elseif N <= 128
-            UInt128
         else
             # fall through to ExtensionField
             nothing
