@@ -81,6 +81,8 @@ using GaloisFields
 
         @test α + β == β + α
         @test α + β + γ == γ + β + α
+
+        @test_throws GaloisFields.InclusionError G(β)
     end
 
     @testset "Iterations" begin
@@ -142,13 +144,16 @@ using GaloisFields
         @test x^3 + x + 1 == y^3 + y + 1
         @test (x^3 + x) / (x + 1) == (y^3 + y) / (y + 1)
 
-        H = @GaloisField! 2^20 x
-        K = @GaloisField! 2^20 y
+        H = @GaloisField! 2^20 z
+        K = @GaloisField! 2^20 w
 
         GaloisFields.enable_zech_multiplication(H)
         GaloisFields.disable_zech_multiplication(K)
 
-        @test x^100 + x + 1 == y^100 + y + 1
-        @test (x^100 + x) / (x + 1) == (y^100 + y) / (y + 1)
+        @test z^100 + z + 1 == w^100 + w + 1
+        @test (z^100 + z) / (z + 1) == (w^100 + w) / (w + 1)
+
+        @test_throws GaloisFields.InclusionError H(x)
+        @test_throws GaloisFields.InclusionError F(z)
     end
 end

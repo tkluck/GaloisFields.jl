@@ -1,3 +1,7 @@
+struct InclusionError
+    msg::String
+end
+
 identifications = Dict()
 
 macro identify(expr)
@@ -42,7 +46,7 @@ function convert(K::Type{<:AbstractGaloisField}, x::PrimeField)
     if char(K) == char(typeof(x))
         return _upgrade(K, x)
     else
-        throw(InexactError("Cannot convert $x to $K"))
+        throw(InclusionError("Cannot convert $x to $K"))
     end
 end
 
@@ -89,7 +93,7 @@ end
         end
     else
         return quote
-            return Union{}
+            throw(InclusionError("Cannot promote $K and $L to a common type"))
         end
     end
 end
@@ -110,14 +114,14 @@ end
                 m = (p^n(K) - 1) ÷ (p^n(L) - 1)
                 target = gen(K)^m
             else
-                throw("There is no inclusion from $L to $K")
+                throw(InclusionError("There is no inclusion from $L to $K"))
             end
         else
             sym = genname(L)
             if (sym, K) in keys(identifications)
                 target = identifications[sym, K]
             else
-                throw("Cannot convert $x to $K; use @GaloisFields.identify $sym => <target> to define the conversion")
+                throw(InclusionError("Cannot convert $x to $K; use @GaloisFields.identify $sym => <target> to define the conversion"))
             end
         end
         powers = map(i -> target^(i-1), 1:n(L))
@@ -132,7 +136,7 @@ end
             return res
         end
     else
-        throw("Cannot convert $x to $K")
+        throw(InclusionError("Cannot convert $x to $K"))
     end
 end
 
