@@ -28,6 +28,8 @@ function Base.iterate(it::BitsIter, state)
         GaloisField(2)((it.n & (1 << state)) >> state), state + 1
     end
 end
+Base.length(it::BitsIter) = trailing_zeros(prevpow(2, it.n)) + 1
+Base.eltype(it::BitsIter) = GaloisField(2)
 
 function minpoly(F::Type{<:BinaryField})
     minpoly = big"1" << n(F) | minpolymask(F)

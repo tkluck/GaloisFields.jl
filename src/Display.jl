@@ -1,8 +1,8 @@
 
 show(io::IO, a::PrimeField) = show(io, a.n)
 
-function show(io::IO, a::ExtensionField)
-    show(io, Poly(collect(a.n), genname(typeof(a))))
+function show(io::IO, a::AbstractExtensionField)
+    show(io, Poly(collect(expansion(a)), genname(typeof(a))))
 end
 
 """
