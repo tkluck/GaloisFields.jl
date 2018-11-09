@@ -14,7 +14,7 @@ char(::Type{ExtensionField{F, N, α, MinPoly, Conway}})      where {F, N, α, Mi
 n(::Type{ExtensionField{F, N, α, MinPoly, Conway}})         where {F, N, α, MinPoly, Conway} = N
 genname(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = α
 minpoly(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = MinPoly
-isconway(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = Conway
+isconway(::Type{ExtensionField{F, N, α, MinPoly, Conway}})  where {F, N, α, MinPoly, Conway} = Conway
 
 expansion(a::ExtensionField) = a.n
 
