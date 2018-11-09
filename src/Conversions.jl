@@ -7,14 +7,21 @@ identifications = Dict()
 macro identify(expr)
     if expr.head == :call && expr.args[1] == :(=>)
         sym, target = expr.args[2:end]
-        quote
-            let tgt = $(esc(target))
-                $identifications[$(QuoteNode(sym)), typeof(tgt)] = tgt
-            end
-        end
+        throw("@GaloisFields.identify is now a function: use GaloisFields.identify($expr)")
     else
         throw("Usage: @identify <symbol> => <target value>")
     end
+end
+
+function identify(identification::Pair{K, L}) where
+                  K <: AbstractExtensionField where
+                  L <: AbstractExtensionField
+    global identifications
+    (src, tgt) = identification
+    if !(gen(typeof(src)) == src)
+        throw("Can only specify an identification through the generator of $K")
+    end
+    identifications[typeof(src), typeof(tgt)] = tgt
 end
 
 function promote_rule(::Type{K}, ::Type{L}) where K <: PrimeField where L <: PrimeField
@@ -83,8 +90,7 @@ end
                 end
             end
         end
-        sym = genname(L)
-        if (sym, K) in keys(identifications)
+        if (L, K) in keys(identifications)
             return quote
                 return K
             end
@@ -119,11 +125,10 @@ end
                 throw(InclusionError("There is no inclusion from $L to $K"))
             end
         else
-            sym = genname(L)
-            if (sym, K) in keys(identifications)
-                target = identifications[sym, K]
+            if (L, K) in keys(identifications)
+                target = identifications[L, K]
             else
-                throw(InclusionError("Cannot convert $x to $K; use @GaloisFields.identify $sym => <target> to define the conversion"))
+                throw(InclusionError("Cannot convert $x to $K; use GaloisFields.identify to define the conversion"))
             end
         end
         powers = map(i -> target^(i-1), 1:n(L))

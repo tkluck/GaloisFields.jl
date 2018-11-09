@@ -31,7 +31,7 @@ using GaloisFields
     @testset "Extensions of 𝔽₃" begin
         G = @GaloisField! 𝔽₃ α^2 + 1
         H = @GaloisField! 𝔽₃ β^2 + 1
-        @GaloisFields.identify α => -β
+        GaloisFields.identify(α => -β)
         @test char(G) == 3
         @test repr(G) == "𝔽₉"
 
@@ -50,7 +50,7 @@ using GaloisFields
     @testset "Extensions of 𝔽₂" begin
         G = @GaloisField! 𝔽₂ α^2 + α + 1
         H = @GaloisField! 𝔽₂ β^2 + β + 1
-        @GaloisFields.identify α => β + 1
+        GaloisFields.identify(α => β + 1)
         @test char(G) == 2
         @test repr(G) == "𝔽₄"
 
