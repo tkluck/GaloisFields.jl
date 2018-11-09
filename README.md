@@ -84,11 +84,11 @@ G(β)
 ```
 will throw an error. The mathematical reason is that  the fields ``F`` and ``G``
 are isomorphic, but there is two different isomorphisms. ("They are not _canonically_
-isomorphic.") To choose an identification, you can use the `@identify` macro
+isomorphic.") To choose an identification, you can use the `identify` function
 (which is not exported by default, so we use its full path):
 ```julia
-@GaloisFields.identify β => γ^2
-@GaloisFields.identify γ => β^2
+GaloisFields.identify(β => γ^2)
+GaloisFields.identify(γ => β^2)
 ```
 This allows for conversions such as
 ```julia
