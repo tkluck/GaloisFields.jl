@@ -45,6 +45,9 @@ using GaloisFields
 
         @test α + β == 0
         @test H(α) + β == 0
+
+        # β + 1 doesn't satisfy minimum polynomial
+        @test_throws GaloisFields.InclusionError GaloisFields.identify(α => β + 1)
     end
 
     @testset "Extensions of 𝔽₂" begin

@@ -21,6 +21,9 @@ function identify(identification::Pair{K, L}) where
     if !(gen(typeof(src)) == src)
         throw("Can only specify an identification through the generator of $K")
     end
+    if sum(c*tgt^(n-1) for (n, c) in enumerate(minpoly(K))) != 0
+        throw(InclusionError("Invalid identification $identification: $tgt does not satisfy minimum polynomial for $src"))
+    end
     identifications[typeof(src), typeof(tgt)] = tgt
 end
 

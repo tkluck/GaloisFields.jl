@@ -15,18 +15,23 @@ genname(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})     where {I, N, α,
 minpolymask(::Type{BinaryField{I, N, α, MinPolyMask, Conway}}) where {I, N, α, MinPolyMask, Conway} = MinPolyMask
 isconway(::Type{BinaryField{I, N, α, MinPolyMask, Conway}})    where {I, N, α, MinPolyMask, Conway} = Conway
 
-struct CoeffsIter{B <: BinaryField}
-    x::B
+struct BitsIter{I <: Integer}
+    n::I
 end
-expansion(a::BinaryField) = CoeffsIter(a)
+expansion(a::BinaryField) = BitsIter(a.n)
 
-Base.iterate(it::CoeffsIter) = GaloisField(2)(it.x.n & 1), 1
-function Base.iterate(it::CoeffsIter{B}, state) where B <: BinaryField
-    if state >= n(B)
+Base.iterate(it::BitsIter) = GaloisField(2)(it.n & 1), 1
+function Base.iterate(it::BitsIter, state)
+    if it.n < big"1" << state
         return nothing
     else
-        GaloisField(2)((it.x.n & (1 << state)) >> state), state + 1
+        GaloisField(2)((it.n & (1 << state)) >> state), state + 1
     end
+end
+
+function minpoly(F::Type{<:BinaryField})
+    minpoly = big"1" << n(F) | minpolymask(F)
+    return BitsIter(minpoly)
 end
 
 # -----------------------------------------------------------------------------
