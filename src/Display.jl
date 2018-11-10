@@ -2,7 +2,30 @@
 show(io::IO, a::PrimeField) = show(io, a.n)
 
 function show(io::IO, a::AbstractExtensionField)
-    show(io, Poly(collect(expansion(a)), genname(typeof(a))))
+    iszero(a) && return print(io, "0")
+
+    x = genname(typeof(a))
+    terms = String[]
+    for (i, c) in enumerate(expansion(a))
+        iszero(c) && continue
+        n = i - 1
+        factors = String[]
+        if c != one(c) || n == 0
+            coeff_repr = "$c"
+            if occursin(" + ", coeff_repr) && n != 0
+                push!(factors, "($coeff_repr)")
+            else
+                push!(factors, coeff_repr)
+            end
+        end
+        if n == 1
+            push!(factors, "$x")
+        elseif n > 1
+            push!(factors, "$x^$n")
+        end
+        push!(terms, join(factors, " * "))
+    end
+    join(io, reverse(terms), " + ")
 end
 
 """

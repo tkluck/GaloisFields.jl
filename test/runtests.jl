@@ -170,4 +170,28 @@ using GaloisFields
         @test_throws GaloisFields.InclusionError H(x)
         @test_throws GaloisFields.InclusionError F(z)
     end
+
+    @testset "Display" begin
+        I = @GaloisField ℤ/2ℤ
+        @test repr(I(0)) == "0"
+        @test repr(I(1)) == "1"
+
+        F = @GaloisField! 𝔽₂ α^2 + α + 1
+        @test repr(F(0)) == "0"
+        @test repr(α) == "α"
+        @test repr(α + 1) == "α + 1"
+        G = @GaloisField! 𝔽₅ α^2 - 2
+        H = @GaloisField! G   β^3 + β + 1
+        @test repr(G(0)) == "0"
+        @test repr(H(0)) == "0"
+        @test repr(α + β) == "β + α"
+        @test repr(α * β) == "α * β"
+        @test repr(α * β + β) == "(α + 1) * β"
+        K = @GaloisField! 2^2 α
+        @test repr(α^2) == "α + 1"
+        L = @GaloisField! 5^2 α
+        @test repr(α - 2) == "α + 3"
+        M = @GaloisField! 5^6 α
+        @test repr(3α^3 - 2) == "3 * α^3 + 3"
+    end
 end
