@@ -20,7 +20,7 @@ struct BitsIter{I <: Integer}
 end
 expansion(a::BinaryField) = BitsIter(a.n)
 
-Base.iterate(it::BitsIter) = GaloisField(2)(it.n & 1), 1
+Base.iterate(it::BitsIter) = iszero(it.n) ? nothing : (GaloisField(2)(it.n & 1), 1)
 function Base.iterate(it::BitsIter, state)
     if it.n < big"1" << state
         return nothing
@@ -28,7 +28,7 @@ function Base.iterate(it::BitsIter, state)
         GaloisField(2)((it.n & (1 << state)) >> state), state + 1
     end
 end
-Base.length(it::BitsIter) = trailing_zeros(prevpow(2, it.n)) + 1
+Base.length(it::BitsIter) = iszero(it.n) ? 0 : trailing_zeros(prevpow(2, it.n)) + 1
 Base.eltype(it::BitsIter) = GaloisField(2)
 
 function minpoly(F::Type{<:BinaryField})
