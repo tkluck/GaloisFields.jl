@@ -20,6 +20,8 @@ using GaloisFields
         @test iszero(zero(F))
         @test iszero(char(F) * one(F))
 
+        @test iszero(-F(0))
+
         # test for correct handling of integer overflow
         for I in [Int8, Int16, Int32, Int64, Int128]
             p = prevprime(typemax(I))

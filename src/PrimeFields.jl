@@ -35,7 +35,7 @@ one( F::Type{<:PrimeField}) = F(Reduced(),  one(inttype(F)))
 -(a::F, b::F) where F<:PrimeField = F(a.n - b.n)
 
 +(a::PrimeField) = a
--(a::PrimeField) = typeof(a)(Reduced(), char(typeof(a)) - a.n)
+-(a::PrimeField) = a.n == 0 ? a : typeof(a)(Reduced(), char(typeof(a)) - a.n)
 
 *(a::F, b::F) where F<:PrimeField = F(Base.widemul(a.n, b.n))
 
