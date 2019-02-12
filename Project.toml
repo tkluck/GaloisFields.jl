@@ -1,5 +1,5 @@
 name = "GaloisFields"
-uuid = "9c44beea-d475-11e8-18d3-e1187efeddc1"
+uuid = "8d0d7f98-d412-5cd4-8397-071c807280aa"
 authors = ["Timo Kluck <tkluck@infty.nl>"]
 version = "0.2.2"
 
