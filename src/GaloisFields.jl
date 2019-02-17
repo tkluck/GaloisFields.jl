@@ -51,9 +51,9 @@ include("Iterations.jl")
 include("Display.jl")
 
 """
-    F = GaloisField(p)
-    F,α = GaloisField(p, :β => [1, 0, 1])
-    F,α = GaloisField(p, n, :β)
+    const F = GaloisField(p)
+    const F,α = GaloisField(p, :β => [1, 0, 1])
+    const F,α = GaloisField(p, n, :β)
 
 Return a type representing a finite field.
 
@@ -74,8 +74,8 @@ Note that in the latter two cases, the variable name (e.g. β above) is part of 
 type. This lets you define identifications between isomorphic (sub)fields. For
 example, with the following definition
 
-    F = @GaloisField! 𝔽₂ β^2 + β + 1
-    G = @GaloisField! 𝔽₂ γ^2 + γ + 1
+    const F = @GaloisField! 𝔽₂ β^2 + β + 1
+    const G = @GaloisField! 𝔽₂ γ^2 + γ + 1
 
 the fields ``F`` and ``G`` are isomorphic, but not canonically. We might
 define
@@ -226,11 +226,11 @@ function _parsepoly(expr::Expr)
 end
 
 """
-    G = @GaloisField! 3 β^2 + 1
-    G = @GaloisField! 𝔽₃ β^2 + 1
-    G = @GaloisField! 3^2 β
-    K = GaloisField(3)
-    G = @GaloisField! K β^2 + 1
+    const G = @GaloisField! 3 β^2 + 1
+    const G = @GaloisField! 𝔽₃ β^2 + 1
+    const G = @GaloisField! 3^2 β
+    const K = GaloisField(3)
+    const G = @GaloisField! K β^2 + 1
 
 Define a finite field `G` and inject a variable for its
 primitive element into the current scope.
@@ -239,8 +239,8 @@ Note that the variable name (e.g. β above) is part of the type. This lets you
 define identifications between isomorphic (sub)fields. For example, with the
 following definition
 
-    F = @GaloisField! 𝔽₂ β^2 + β + 1
-    G = @GaloisField! 𝔽₂ γ^2 + γ + 1
+    const F = @GaloisField! 𝔽₂ β^2 + β + 1
+    const G = @GaloisField! 𝔽₂ γ^2 + γ + 1
 
 the fields ``F`` and ``G`` are isomorphic, but not canonically. We might
 define
