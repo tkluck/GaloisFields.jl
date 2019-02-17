@@ -27,6 +27,8 @@ using GaloisFields
             p = prevprime(typemax(I))
             G = GaloisField(p)
             @test G(-1) * G(-1) == 1
+            @test G(-1) + G(-1) == -2
+            @test G(0) - G(-1) == 1
         end
     end
 

@@ -1,3 +1,4 @@
+import Base.Checked: add_with_overflow, sub_with_overflow
 
 """
     PrimeField{I<:Integer, p}
@@ -20,7 +21,7 @@ function inttype(p::Integer)
             return I
         end
     end
-    return typeof(p)
+    throw("Primes greater than Int128 are currently unsupported")
 end
 
 # -----------------------------------------------------------------------------
@@ -31,8 +32,29 @@ end
 zero(F::Type{<:PrimeField}) = F(Reduced(), zero(inttype(F)))
 one( F::Type{<:PrimeField}) = F(Reduced(),  one(inttype(F)))
 
-+(a::F, b::F) where F<:PrimeField = F(a.n + b.n)
--(a::F, b::F) where F<:PrimeField = F(a.n - b.n)
+function +(a::F, b::F) where F<:PrimeField
+    if char(F) > div(typemax(inttype(F)), 2)
+        m, overflowed = add_with_overflow(a.n, b.n)
+        if overflowed
+            m += 2rem(typemax(inttype(F)), char(F)) + 2
+        end
+        F(m)
+    else
+        F(a.n + b.n)
+    end
+end
+
+function -(a::F, b::F) where F<:PrimeField
+    if char(F) > div(typemax(inttype(F)), 2)
+        m, overflowed = sub_with_overflow(a.n, b.n)
+        if overflowed
+            m -= 2rem(typemax(inttype(F)), char(F)) + 2
+        end
+        F(m)
+    else
+        F(a.n - b.n)
+    end
+end
 
 +(a::PrimeField) = a
 -(a::PrimeField) = a.n == 0 ? a : typeof(a)(Reduced(), char(typeof(a)) - a.n)
