@@ -1,7 +1,7 @@
 name = "GaloisFields"
 uuid = "8d0d7f98-d412-5cd4-8397-071c807280aa"
 authors = ["Timo Kluck <tkluck@infty.nl>"]
-version = "0.2.2"
+version = "0.3.0"
 
 [deps]
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
