@@ -82,7 +82,7 @@ end
             if F in keys(overrides)
                 # the user explicitly requested Zech logarithms, but we
                 # can't provide them. Throw a warning.
-                @warn "Primitive element for $F is not a multiplicative generator; operations may be slow"
+                @warn "Primitive element for $F is not a multiplicative generator. We cannot use Zech logarithms and therefore operations may be slow"
            end
             # fall through
         end
