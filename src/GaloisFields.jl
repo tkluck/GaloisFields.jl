@@ -35,6 +35,17 @@ has already been reduced mod p.
 struct Reduced end
 
 """
+    NonNegative()
+
+A helper singleton used for asserting that an input value
+is non-negative.
+
+This means we can use `rem(...)` instead of `mod(...)`, which
+is significantly faster.
+"""
+struct NonNegative end
+
+"""
     p = char(GaloisField(3)) # returns 3
 
 Return the characteristic of a finite field, or 0 for <:Integer or <:Rational{<Integer}.

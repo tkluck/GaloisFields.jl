@@ -8,6 +8,7 @@ A type representing an element in ℤ/pℤ.
 struct PrimeField{I<:Integer, p} <: AbstractGaloisField
     n::I
     PrimeField{I, p}(n::Integer) where {I, p} = new(mod(n, p))
+    PrimeField{I, p}(::NonNegative, n::Integer) where {I, p} = new(rem(n, p))
     PrimeField{I, p}(::Reduced, n::Integer) where {I, p} = new(n)
 end
 
@@ -38,9 +39,9 @@ function +(a::F, b::F) where F<:PrimeField
         if overflowed
             m += 2rem(typemax(inttype(F)), char(F)) + 2
         end
-        F(m)
+        F(m) # note: not necessarily non-negative in this case!
     else
-        F(a.n + b.n)
+        F(NonNegative(), a.n + b.n)
     end
 end
 
@@ -50,18 +51,18 @@ function -(a::F, b::F) where F<:PrimeField
         if overflowed
             m -= 2rem(typemax(inttype(F)), char(F)) + 2
         end
-        F(m)
+        F(m) # note: not necessarily non-negative in this case!
     else
-        F(a.n - b.n)
+        F(NonNegative(), char(F) + a.n - b.n)
     end
 end
 
 +(a::PrimeField) = a
--(a::PrimeField) = a.n == 0 ? a : typeof(a)(Reduced(), char(typeof(a)) - a.n)
+-(a::PrimeField) = a.n == 0 ? a : typeof(a)(NonNegative(), char(typeof(a)) - a.n)
 
-*(a::F, b::F) where F<:PrimeField = F(Base.widemul(a.n, b.n))
+*(a::F, b::F) where F<:PrimeField = F(NonNegative(), Base.widemul(a.n, b.n))
 
-inv(a::F)     where F<:PrimeField = F(Reduced(), invmod(a.n, char(F)))
+inv(a::F)     where F<:PrimeField = F(NonNegative(), invmod(a.n, char(F)))
 /(a::F,b::F)  where F<:PrimeField = a * inv(b)
 //(a::F,b::F) where F<:PrimeField = a * inv(b)
 
@@ -75,5 +76,5 @@ iszero(a::PrimeField) = iszero(a.n)
 promote_rule(F::Type{<:PrimeField}, ::Type{<:Integer}) = F
 convert(F::Type{<:PrimeField}, i::Integer) = F(i)
 
-(::Type{F})(n::F) where F<:PrimeField = F(n.n)
+(::Type{F})(n::F) where F<:PrimeField = F(Reduced(), n.n)
 convert(::Type{F}, n::F) where F<:PrimeField = n
