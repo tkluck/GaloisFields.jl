@@ -269,6 +269,11 @@ macro GaloisField!(expr, minpoly)
     end
 end
 
+if VERSION < v"1.3-"
+    # https://github.com/JuliaLang/julia/pull/31822
+    Base.deepcopy(x::AbstractGaloisField) = x
+end
+
 export GaloisField, @GaloisField, @GaloisField!, char
 
 end
