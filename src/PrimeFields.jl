@@ -34,6 +34,8 @@ zero(F::Type{<:PrimeField}) = F(Reduced(), zero(inttype(F)))
 one( F::Type{<:PrimeField}) = F(Reduced(),  one(inttype(F)))
 
 function +(a::F, b::F) where F<:PrimeField
+    iszero(a) && return +b
+    iszero(b) && return +a
     if char(F) > div(typemax(inttype(F)), 2)
         m, overflowed = add_with_overflow(a.n, b.n)
         if overflowed
@@ -46,6 +48,8 @@ function +(a::F, b::F) where F<:PrimeField
 end
 
 function -(a::F, b::F) where F<:PrimeField
+    iszero(a) && return -b
+    iszero(b) && return +a
     if char(F) > div(typemax(inttype(F)), 2)
         m, overflowed = sub_with_overflow(a.n, b.n)
         if overflowed
@@ -58,11 +62,17 @@ function -(a::F, b::F) where F<:PrimeField
 end
 
 +(a::PrimeField) = a
--(a::PrimeField) = a.n == 0 ? a : typeof(a)(NonNegative(), char(typeof(a)) - a.n)
+-(a::PrimeField) = iszero(a.n) ? a : typeof(a)(Reduced(), char(typeof(a)) - a.n)
 
-*(a::F, b::F) where F<:PrimeField = F(NonNegative(), Base.widemul(a.n, b.n))
+function *(a::F, b::F) where F<:PrimeField
+    iszero(a) && return zero(F)
+    iszero(b) && return zero(F)
+    isone(a) && return +b
+    isone(b) && return +a
+    F(NonNegative(), Base.widemul(a.n, b.n))
+end
 
-inv(a::F)     where F<:PrimeField = F(NonNegative(), invmod(a.n, char(F)))
+inv(a::F)     where F<:PrimeField = F(Reduced(), invmod(a.n, char(F)))
 /(a::F,b::F)  where F<:PrimeField = a * inv(b)
 //(a::F,b::F) where F<:PrimeField = a * inv(b)
 
