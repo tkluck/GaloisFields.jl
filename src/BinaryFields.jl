@@ -62,18 +62,25 @@ _widen(::Type{UInt8}) = UInt16
 _widen(::Type{UInt16}) = UInt32
 _widen(::Type{UInt32}) = UInt64
 _widen(::Type{UInt64}) = UInt128
-include("BitReversal.jl")
 function carrylessmul(a::I, b::I) where I <: Integer
     J = _widen(I)
-    res = zero(J)
-    a = J(a)
-    b = bitswap(J(b))
-    for _ = 1:8sizeof(J)
-        res <<= 1
-        res |= (count_ones(b & a) & 1) % J
-        b >>= 1
+
+    lhs = VecElement.((UInt64(a), UInt64(0)))
+    rhs = VecElement.((UInt64(b), UInt64(0)))
+    clmul = carrylessmul(lhs, rhs)
+
+    if sizeof(J) <= sizeof(Int64)
+        return J(clmul[1].value)
+    else
+        res = J(clmul[1].value)
+        res |= J(clmul[2].value) << 64
+        return res
     end
-    return res
+end
+
+const m128 = NTuple{2,VecElement{UInt64}}
+function carrylessmul(a::m128, b::m128)
+    ccall("llvm.x86.pclmulqdq", llvmcall, m128, (m128, m128, UInt8), a, b, 0)
 end
 
 function *(::Direct, a::F, b::F) where F <: BinaryField{I} where I
