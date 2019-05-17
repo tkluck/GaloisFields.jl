@@ -18,6 +18,7 @@ end
 
 _DenseVector{T} = Union{
     DenseVector{T},
+    # TODO: should check for unitrange having step size +1
     SubArray{T,1,Vector{T},Tuple{UnitRange{Int64}},true},
 }
 _SIMDable = PrimeField{<:Union{Int8, Int16, Int32, Int64}}
