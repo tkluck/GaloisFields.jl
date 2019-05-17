@@ -31,6 +31,10 @@ char(::Type{PrimeField{I,p}})    where {I, p} = p
 n(::Type{PrimeField{I,p}})       where {I, p} = 1
 inttype(::Type{PrimeField{I,p}}) where {I, p} = I
 
+char(a::AbstractGaloisField)    = char(typeof(a))
+n(a::AbstractGaloisField)       = n(typeof(a))
+inttype(a::AbstractGaloisField) = inttype(typeof(a))
+
 function inttype(p::Integer)
     for I in [Int8, Int16, Int32, Int64, Int128]
         if p <= typemax(I)
