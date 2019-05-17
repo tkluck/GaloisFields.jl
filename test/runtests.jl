@@ -234,5 +234,8 @@ using GaloisFields
         @test x[1] .// F[y;] == F.(x[1] .* invmod.(y, char(F)))
         @test F[x;] .// F(y[1]) == F.(x .* invmod(y[1], char(F)))
         @test F[x;] .// y[1] == F.(x .* invmod(y[1], char(F)))
+
+        @test F.(x) == F[x;]
+        @test convert.(F, x) == F[x;]
     end
 end

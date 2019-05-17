@@ -41,10 +41,10 @@ _getslice(x::_DenseVector{F}, vr::VecRange{N}) where F <: PrimeField where N = v
 _setslice!(x::_DenseVector{F}, val::Vec{N, I}, vr::VecRange{N}) where F <: PrimeField{I} where {N, I} = vstore(val, pointer(reinterpret(inttype(F), x), vr.i))
 
 # can't do invmod(...) on SIMD, so transform here
-# TODO: there's many more operations we should similarly exclude, e.g. F.(x)
-broadcasted(st::SIMDBroadcast, ::Union{typeof(/), typeof(//)}, arg1, arg2) = broadcasted(st, *, arg1, broadcasted(st, inv, arg2))
-broadcasted(st::SIMDBroadcast, ::typeof(inv), arg::AbstractVector) = map(inv ∘ eltype(st), arg)
-broadcasted(st::SIMDBroadcast, ::typeof(inv), arg::Number) = inv(eltype(st)(arg))
+broadcasted(st::SIMDBroadcast, ::Union{typeof(/), typeof(//)}, arg1, arg2) = broadcasted(st, *, arg1, (inv ∘ eltype(st)).(arg2))
+FusableOps = Union{typeof(+), typeof(-), typeof(*), typeof(^)}
+broadcasted(st::SIMDBroadcast, f::FusableOps, args...) = Broadcasted{typeof(st)}(f, args)
+broadcasted(st::SIMDBroadcast, f::Function, args...) = broadcasted(DefaultArrayStyle{1}(), f, args...)
 
 function copyto!(dest::_DenseVector{F}, bc::Broadcasted{SIMDBroadcast{F}}) where F <: PrimeField
     bcf = flatten(bc)
