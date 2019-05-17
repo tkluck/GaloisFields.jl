@@ -32,6 +32,17 @@ using GaloisFields
         end
     end
 
+    @testset "Integer promotions" begin
+        F = @GaloisField ℤ/37ℤ
+
+        @test F(2) + 4 == F(6)
+        @test F(2) * 4 == F(8)
+        @test F(2) / 4 == F(2) / F(4)
+        @test 2 + F(4) == F(6)
+        @test 2 * F(4) == F(8)
+        @test 2 / F(4) == F(2) / F(4)
+    end
+
     @testset "Extensions of 𝔽₃" begin
         G = @GaloisField! 𝔽₃ α^2 + 1
         H = @GaloisField! 𝔽₃ β^2 + 1
