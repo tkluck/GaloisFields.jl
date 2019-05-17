@@ -38,6 +38,7 @@ using GaloisFields
         @test F(2) + 4 == F(6)
         @test F(2) * 4 == F(8)
         @test F(2) / 4 == F(2) / F(4)
+        @test F(2) // 4 == F(2) // F(4)
         @test 2 + F(4) == F(6)
         @test 2 * F(4) == F(8)
         @test 2 / F(4) == F(2) / F(4)
