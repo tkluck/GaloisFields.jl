@@ -42,7 +42,7 @@ _setslice!(x::_DenseVector{F}, val::Vec{N, I}, vr::VecRange{N}) where F <: Prime
 
 # can't do invmod(...) on SIMD, so transform here
 # TODO: there's many more operations we should similarly exclude, e.g. F.(x)
-broadcasted(st::SIMDBroadcast, ::typeof(/), arg1, arg2) = broadcasted(st, *, arg1, broadcasted(st, inv, arg2))
+broadcasted(st::SIMDBroadcast, ::Union{typeof(/), typeof(//)}, arg1, arg2) = broadcasted(st, *, arg1, broadcasted(st, inv, arg2))
 broadcasted(st::SIMDBroadcast, ::typeof(inv), arg::AbstractVector) = map(inv ∘ eltype(st), arg)
 broadcasted(st::SIMDBroadcast, ::typeof(inv), arg::Number) = inv(eltype(st)(arg))
 

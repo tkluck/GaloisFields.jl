@@ -41,6 +41,7 @@ using GaloisFields
         @test 2 + F(4) == F(6)
         @test 2 * F(4) == F(8)
         @test 2 / F(4) == F(2) / F(4)
+        @test 2 // F(4) == F(2) / F(4)
     end
 
     @testset "Extensions of 𝔽₃" begin
@@ -228,5 +229,10 @@ using GaloisFields
         @test x[1] ./ F[y;] == F.(x[1] .* invmod.(y, char(F)))
         @test F[x;] ./ F(y[1]) == F.(x .* invmod(y[1], char(F)))
         @test F[x;] ./ y[1] == F.(x .* invmod(y[1], char(F)))
+
+        @test F(x[1]) .// F[y;] == F.(x[1] .* invmod.(y, char(F)))
+        @test x[1] .// F[y;] == F.(x[1] .* invmod.(y, char(F)))
+        @test F[x;] .// F(y[1]) == F.(x .* invmod(y[1], char(F)))
+        @test F[x;] .// y[1] == F.(x .* invmod(y[1], char(F)))
     end
 end

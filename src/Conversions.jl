@@ -159,3 +159,6 @@ for to in [PrimeField, BinaryField, ExtensionField]
         @eval (E::Type{<:$to})(n::$from) = convert(E, n)
     end
 end
+
+//(a::Integer, b::AbstractGaloisField) = //(promote(a, b)...)
+//(a::AbstractGaloisField, b::Integer) = //(promote(a, b)...)
