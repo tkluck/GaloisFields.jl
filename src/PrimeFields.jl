@@ -19,7 +19,10 @@ inttype(::Type{PrimeField{I,p}}) where {I, p} = I
 function inttype(p::Integer)
     for I in [Int8, Int16, Int32, Int64, Int128]
         if p <= typemax(I)
-            return I
+            # take one sizer bigger so there's some room for
+            # fusing operations before doing the modulo operation.
+            # this is implicitly used in Broadcast.jl.
+            return I == Int128 ? I : widen(I)
         end
     end
     throw("Primes greater than Int128 are currently unsupported")
