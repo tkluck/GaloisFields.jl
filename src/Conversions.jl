@@ -162,3 +162,5 @@ end
 
 //(a::Integer, b::AbstractGaloisField) = //(promote(a, b)...)
 //(a::AbstractGaloisField, b::Integer) = //(promote(a, b)...)
+
+Base.denominator(a::AbstractGaloisField) = one(inttype(a))
