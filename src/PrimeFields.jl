@@ -1,13 +1,28 @@
 import Base.Checked: add_with_overflow, sub_with_overflow
 
 """
+    posmod(x, y)
+
+Return mod(x, y) under the assumption that y is positive. In general,
+returns
+
+    rem(x, y) + ifelse(rem(x, y) < 0, y, 0)
+
+This is slightly faster than the mod operation.
+"""
+function posmod(x, y)
+    z = rem(x, y)
+    z + ifelse(signbit(z), y, zero(y))
+end
+
+"""
     PrimeField{I<:Integer, p}
 
 A type representing an element in ℤ/pℤ.
 """
 struct PrimeField{I<:Integer, p} <: AbstractGaloisField
     n::I
-    PrimeField{I, p}(n::Integer) where {I, p} = new(mod(n, p))
+    PrimeField{I, p}(n::Integer) where {I, p} = new(posmod(n, p))
     PrimeField{I, p}(::NonNegative, n::Integer) where {I, p} = new(rem(n, p))
     PrimeField{I, p}(::Reduced, n::Integer) where {I, p} = new(n)
 end
