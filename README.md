@@ -119,6 +119,12 @@ of either is a power of the other, we convert into the bigger field. If not, we
 convert both into the field of order `p^N`, where `N` is the least common
 multiple of the extension degrees of `F` and `G` over ℤ/pℤ.
 
+## Acknowledgements
+
+This package uses [Frank Lübeck's][lubeck] [database of Conway polynomials][db].
+For security, we make a [copy available over https][https-db] for this package.
+It is downloaded as part of the install process.
+
 [conway]: https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)
 
 
@@ -130,3 +136,7 @@ multiple of the extension degrees of `F` and `G` over ℤ/pℤ.
 
 [codecov-img]: https://codecov.io/gh/tkluck/GaloisFields.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/tkluck/GaloisFields.jl
+
+[lubeck]: http://www.math.rwth-aachen.de/~Frank.Luebeck/index.html
+[db]: http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html?LANG=en
+[https-db]: https://gist.githubusercontent.com/tkluck/e1cd1746c69aa17e4a37114d22649627/raw/7fbe9763fae27f14924262ad03606f1c3af4400e/CPImport.txt
