@@ -1,3 +1,22 @@
+"""
+    GaloisFields.Broadcast
+
+Currently, this module contains two distinct optimizations for
+`Vector{<:PrimeField}`:
+
+1. Do only a single mod(..., char(F)) operation for a fused broadcasted
+   operation (e.g. `mod(x.n + y.n - z.n, char(F))` instead of
+   `mod(mod(x.n + y.n, char(F)) - z.n, char(F))`.
+2. Use SIMD operations for speed.
+
+Both of these are applied for broadcasted combinations of
+the `+, -, *` operations over vectors of `PrimeFields`.
+
+Because of the first optimization, it is important to realize that there's a
+risk of the integer type overflowing before applying mod(.., char(F)). One
+should therefore not use broadcasting when `char(F)` is close to
+`typemax(inttype(F))`. We intend to address this in the future.
+"""
 module Broadcast
 
 import Base: copyto!, similar
