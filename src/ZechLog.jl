@@ -45,6 +45,7 @@ end
 
 function zech_op(logtable, exptable, n, ::Union{typeof(/), typeof(//)}, a, b)
     iszero(b) && throw(DivideError())
+    iszero(a) && return zero(a)
     exptable[mod(logtable[a] - logtable[b], n)]
 end
 
