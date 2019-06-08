@@ -256,4 +256,21 @@ using GaloisFields
         # corner case: fuse operations with intermediate results bigger than integer type
         @test F[x;] .* F[x;] .* F[x;] .* F[x;] == map(x -> x^4, F[x;])
     end
+
+    @testset "Random selection" begin
+        F = @GaloisField 𝔽₂₉
+        G = @GaloisField! 𝔽₅ α^2 - 2
+        H = @GaloisField! G   β^3 + β + 1
+        K = @GaloisField! 𝔽₆₄ γ
+
+        x = rand(F, 100)
+        y = rand(G, 100)
+        z = rand(H, 100)
+        w = rand(K, 100)
+
+        @test x .+ x .* x == map(a -> a + a * a, x)
+        @test y .+ y .* y == map(a -> a + a * a, y)
+        @test z .+ z .* z == map(a -> a + a * a, z)
+        @test w .+ w .* w == map(a -> a + a * a, w)
+    end
 end

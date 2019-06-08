@@ -164,3 +164,12 @@ function convert(F::Type{<:BinaryField{I}}, i::Integer) where I
 end
 
 (::Type{F})(n::F) where F<:BinaryField = F(Bits(), n.n)
+
+# -----------------------------------------------------------------------------
+#
+# Random number
+#
+# -----------------------------------------------------------------------------
+function rand(rng::AbstractRNG, ::SamplerType{F}) where F <: BinaryField{I} where I
+    F(Bits(), rand(rng, I) & (I(2)^n(F) - 1))
+end

@@ -123,3 +123,12 @@ end
 @inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{I, N, <:PrimeField{I}}, i1::Int, tailinds::TT) where {I, N, TT}
     return reinterpret(T, a.parent[i1, tailinds...])
 end
+
+# -----------------------------------------------------------------------------
+#
+# Random number
+#
+# -----------------------------------------------------------------------------
+function rand(rng::AbstractRNG, ::SamplerType{F}) where F <: PrimeField
+    F(rand(rng, 0 : char(F)-1))
+end

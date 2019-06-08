@@ -133,3 +133,12 @@ function convert(F::Type{<:ExtensionField}, i::Integer)
 end
 
 (::Type{F})(n::F) where F<:ExtensionField = F(n.n)
+
+# -----------------------------------------------------------------------------
+#
+# Random number
+#
+# -----------------------------------------------------------------------------
+function rand(rng::AbstractRNG, ::SamplerType{F}) where F <: ExtensionField
+    F(ntuple(i -> rand(rng, basefield(F)), n(F)))
+end

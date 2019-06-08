@@ -1,6 +1,7 @@
 @doc read(open(joinpath(@__DIR__, "..", "README.md")), String)
 module GaloisFields
 
+import Random: AbstractRNG, SamplerType
 import Serialization: deserialize
 
 import Polynomials: Poly, coeffs
@@ -11,6 +12,7 @@ import Base: zero, one, +, -, *, /, //, ^, inv, iszero
 import Base: show
 import Base: convert, promote_rule, promote_type, eltype
 import Base: iterate
+import Base: rand
 
 """
     abstract type AbstractGaloisField <: Number end
