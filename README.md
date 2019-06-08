@@ -131,7 +131,7 @@ It is downloaded as part of the install process.
 [travis-img]: https://travis-ci.org/tkluck/GaloisFields.jl.svg?branch=master
 [travis-url]: https://travis-ci.org/tkluck/GaloisFields.jl
 
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/4g6ax1ni7ijx3rn4?svg=true
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/74ti0cx7honk82yj?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/tkluck/galoisfields-jl
 
 [codecov-img]: https://codecov.io/gh/tkluck/GaloisFields.jl/branch/master/graph/badge.svg
