@@ -53,6 +53,7 @@ Return the characteristic of a finite field, or 0 for <:Integer or <:Rational{<I
 char(::Type{<:Rational{<:Integer}}) = 0
 char(::Type{<:Integer}) = 0
 
+include("BoundedIntegers.jl")
 include("PrimeFields.jl")
 include("ZechLog.jl")
 include("ExtensionFields.jl")

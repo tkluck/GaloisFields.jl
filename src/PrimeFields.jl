@@ -10,7 +10,7 @@ returns
 
 This is slightly faster than the mod operation.
 """
-function posmod(x, y)
+@inline function posmod(x, y)
     z = rem(x, y)
     z + ifelse(signbit(z), y, zero(y))
 end
@@ -38,10 +38,7 @@ inttype(a::AbstractGaloisField) = inttype(typeof(a))
 function inttype(p::Integer)
     for I in [Int8, Int16, Int32, Int64, Int128]
         if p <= typemax(I)
-            # take one sizer bigger so there's some room for
-            # fusing operations before doing the modulo operation.
-            # this is implicitly used in Broadcast.jl.
-            return I == Int128 ? I : widen(I)
+            return I
         end
     end
     throw("Primes greater than Int128 are currently unsupported")
@@ -110,3 +107,19 @@ convert(F::Type{<:PrimeField}, i::Integer) = F(i)
 
 (::Type{F})(n::F) where F<:PrimeField = F(Reduced(), n.n)
 convert(::Type{F}, n::F) where F<:PrimeField = n
+
+# -----------------------------------------------------------------------------
+#
+# Re-interpret as integers
+#
+# -----------------------------------------------------------------------------
+Base.reinterpret(F::Type{<:PrimeField{I}}, x::I) where I = F(Reduced(), x)
+Base.reinterpret(T::Type{I}, x::PrimeField{I})   where I = x.n
+
+@inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{<:PrimeField{I}, N, I}, i1::Int, tailinds::TT) where {I, N, TT}
+    return reinterpret(T, a.parent[i1, tailinds...])
+end
+
+@inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{I, N, <:PrimeField{I}}, i1::Int, tailinds::TT) where {I, N, TT}
+    return reinterpret(T, a.parent[i1, tailinds...])
+end

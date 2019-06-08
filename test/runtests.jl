@@ -252,5 +252,8 @@ using GaloisFields
 
         @test F.(x) == F[x;]
         @test convert.(F, x) == F[x;]
+
+        # corner case: fuse operations with intermediate results bigger than integer type
+        @test F[x;] .* F[x;] .* F[x;] .* F[x;] == map(x -> x^4, F[x;])
     end
 end

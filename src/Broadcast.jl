@@ -4,92 +4,53 @@
 Currently, this module contains two distinct optimizations for
 `Vector{<:PrimeField}`:
 
-1. Do only a single mod(..., char(F)) operation for a fused broadcasted
-   operation (e.g. `mod(x.n + y.n - z.n, char(F))` instead of
-   `mod(mod(x.n + y.n, char(F)) - z.n, char(F))`.
-2. Use SIMD operations for speed.
+This module optimizes operations for Vector{<:PrimeField} by doing only a single
+mod(..., char(F)) operation for a fused broadcasted operation (e.g. `mod(x.n +
+y.n - z.n, char(F))` instead of `mod(mod(x.n + y.n, char(F)) - z.n, char(F))`.
 
-Both of these are applied for broadcasted combinations of
-the `+, -, *` operations over vectors of `PrimeFields`.
+This is applied for broadcasted combinations of the `+, -, *` operations over
+vectors of `PrimeFields`.
 
-Because of the first optimization, it is important to realize that there's a
-risk of the integer type overflowing before applying mod(.., char(F)). One
-should therefore not use broadcasting when `char(F)` is close to
-`typemax(inttype(F))`. We intend to address this in the future.
+We use a specially crafted `BoundedInteger` type to widen the intermediate
+results where necessary. See `GaloisFields.BoundedIntegers`.
 """
 module Broadcast
 
-import Base: copyto!, similar
+import Base: copyto!, similar, eltype
 import Base.Broadcast: Broadcasted, BroadcastStyle, broadcasted
 import Base.Broadcast: DefaultArrayStyle, AbstractArrayStyle
 import Base.Broadcast: flatten, copyto!
 
-import SIMD: VecRange, vload, vstore, Vec, vifelse
+import ..BoundedIntegers: BoundedInteger
+import GaloisFields: inttype, char, PrimeField, posmod
 
-import GaloisFields: inttype, char, PrimeField
+struct FusedModBroadcast{F} <: BroadcastStyle end
+eltype(::FusedModBroadcast{F}) where F = F
 
-function vecmod(x, y)
-    T = typeof(x)
-    z = rem(x, y)
-    z += vifelse(z < 0, T(y), T(0))
-    z
-end
+BroadcastStyle(::Type{<:AbstractArray{F}}) where F <: PrimeField = FusedModBroadcast{F}()
+BroadcastStyle(::T, ::T) where T <: FusedModBroadcast = T()
+BroadcastStyle(s::FusedModBroadcast, t::FusedModBroadcast) = AbstractArrayStyle{1}
+BroadcastStyle(s::FusedModBroadcast, t::AbstractArrayStyle{0}) = s
+BroadcastStyle(s::AbstractArrayStyle{0}, t::FusedModBroadcast) = t
+BroadcastStyle(s::FusedModBroadcast, t::BroadcastStyle) = t
 
-_DenseVector{T} = Union{
-    DenseVector{T},
-    # TODO: should check for unitrange having step size +1
-    SubArray{T,1,Vector{T},Tuple{UnitRange{Int64}},true},
-}
-_SIMDable = PrimeField{<:Union{Int8, Int16, Int32, Int64}}
+similar(bc::Broadcasted{FusedModBroadcast{F}}, ::Type{F}) where F <: PrimeField = similar(Array{F}, axes(bc))
 
-struct SIMDBroadcast{F} <: BroadcastStyle end
-eltype(::SIMDBroadcast{F}) where F = F
-
-BroadcastStyle(::Type{<:_DenseVector{F}}) where F <: _SIMDable = SIMDBroadcast{F}()
-BroadcastStyle(::T, ::T) where T <: SIMDBroadcast = T()
-BroadcastStyle(s::SIMDBroadcast, t::SIMDBroadcast) = AbstractArrayStyle{1}
-BroadcastStyle(s::SIMDBroadcast, t::AbstractArrayStyle{0}) = s
-BroadcastStyle(s::AbstractArrayStyle{0}, t::SIMDBroadcast) = t
-BroadcastStyle(s::SIMDBroadcast, t::BroadcastStyle) = t
-
-similar(bc::Broadcasted{SIMDBroadcast{F}}, ::Type{F}) where F <: PrimeField = similar(Array{F}, axes(bc))
-
-_getslice(x, ix) = x
-_getslice(x::PrimeField, ix) = x.n
-_getslice(x::_DenseVector{F}, vr::VecRange{N}) where F <: PrimeField where N = vload(Vec{N, inttype(F)}, pointer(reinterpret(inttype(F), x), vr.i))
-_setslice!(x::_DenseVector{F}, val::Vec{N, I}, vr::VecRange{N}) where F <: PrimeField{I} where {N, I} = vstore(val, pointer(reinterpret(inttype(F), x), vr.i))
-
-# can't do invmod(...) on SIMD, so transform here
-broadcasted(st::SIMDBroadcast, ::Union{typeof(/), typeof(//)}, arg1, arg2) = broadcasted(st, *, arg1, (inv ∘ eltype(st)).(arg2))
+# transform / and // to a version that also works when reinterpreting as integers
+broadcasted(st::FusedModBroadcast, ::Union{typeof(/), typeof(//)}, arg1, arg2) = broadcasted(st, *, arg1, (inv ∘ eltype(st)).(arg2))
 FusableOps = Union{typeof(+), typeof(-), typeof(*), typeof(^)}
-broadcasted(st::SIMDBroadcast, f::FusableOps, args...) = Broadcasted{typeof(st)}(f, args)
-broadcasted(st::SIMDBroadcast, f::Function, args...) = broadcasted(DefaultArrayStyle{1}(), f, args...)
+broadcasted(st::FusedModBroadcast, f::FusableOps, args...) = Broadcasted{typeof(st)}(f, args)
+broadcasted(st::FusedModBroadcast, f::Function, args...) = broadcasted(DefaultArrayStyle{1}(), f, args...)
 
-function copyto!(dest::_DenseVector{F}, bc::Broadcasted{SIMDBroadcast{F}}) where F <: PrimeField
+_boundedtype(T::Type{<:PrimeField}) = BoundedInteger{0:char(T)-1, inttype(T)}
+_reinterpret(x) = x
+_reinterpret(x::PrimeField) = reinterpret(_boundedtype(typeof(x)), x.n)
+_reinterpret(x::AbstractArray{<:PrimeField}) = reinterpret(_boundedtype(eltype(x)), x)
+function copyto!(dest::AbstractArray{F}, bc::Broadcasted{FusedModBroadcast{F}}) where F <: PrimeField
     bcf = flatten(bc)
-    f = bcf.f
-    args = bcf.args
-
-    m = length(dest)
-    N = 8
-    lane = VecRange{N}(1)
-    for i = 0 : div(m, N) - 1
-        j = i * N
-        _setslice!(
-            dest,
-            # We're fusing the operation before doing the mod operation.
-            # This is way faster, but it may overflow. To reduce the odds, we construct
-            # PrimeField{I, p} always with a bigger I than necessary. See PrimeField.jl.
-            # (TODO: A safer solution is to be implemented.)
-            vecmod(f(map(a -> _getslice(a, lane + j), args)...), char(F)),
-            lane + j,
-        )
-    end
-    r = rem(m, N)
-    for j = m - r + 1 : m
-        dest[j] = bcf[j]
-    end
-
+    args = map(_reinterpret, bcf.args)
+    red(x) = posmod(x, char(F))
+    copyto!(_reinterpret(dest), broadcasted(red ∘ bcf.f, args...))
     dest
 end
 
