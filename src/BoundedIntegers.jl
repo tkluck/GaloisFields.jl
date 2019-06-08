@@ -84,15 +84,4 @@ function Base.show(io::IO, a::BoundedInteger)
     print(io, "BoundedInteger{$(bounds(a))}($(val(a)))")
 end
 
-Base.reinterpret(T::Type{<:BoundedInteger{Bounds, I}}, x::I) where {Bounds, I} = T(x)
-Base.reinterpret(T::Type{I}, x::BoundedInteger{Bounds, I})   where {Bounds, I} = val(x)
-
-@inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{BoundedInteger{Bounds, I}, N, I}, i1::Int, tailinds::TT) where {Bounds, I, N, TT}
-    return reinterpret(T, a.parent[i1, tailinds...])
-end
-
-@inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{I, N, BoundedInteger{Bounds, I}}, i1::Int, tailinds::TT) where {Bounds, I, N, TT}
-    return reinterpret(T, a.parent[i1, tailinds...])
-end
-
 end # module

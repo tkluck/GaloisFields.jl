@@ -110,22 +110,6 @@ convert(::Type{F}, n::F) where F<:PrimeField = n
 
 # -----------------------------------------------------------------------------
 #
-# Re-interpret as integers
-#
-# -----------------------------------------------------------------------------
-Base.reinterpret(F::Type{<:PrimeField{I}}, x::I) where I = F(Reduced(), x)
-Base.reinterpret(T::Type{I}, x::PrimeField{I})   where I = x.n
-
-@inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{<:PrimeField{I}, N, I}, i1::Int, tailinds::TT) where {I, N, TT}
-    return reinterpret(T, a.parent[i1, tailinds...])
-end
-
-@inline Base.@propagate_inbounds function Base._getindex_ra(a::Base.ReinterpretArray{I, N, <:PrimeField{I}}, i1::Int, tailinds::TT) where {I, N, TT}
-    return reinterpret(T, a.parent[i1, tailinds...])
-end
-
-# -----------------------------------------------------------------------------
-#
 # Random number
 #
 # -----------------------------------------------------------------------------

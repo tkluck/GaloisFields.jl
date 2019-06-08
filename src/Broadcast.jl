@@ -49,8 +49,8 @@ _reinterpret(x::AbstractArray{<:PrimeField}) = reinterpret(_boundedtype(eltype(x
 function copyto!(dest::AbstractArray{F}, bc::Broadcasted{FusedModBroadcast{F}}) where F <: PrimeField
     bcf = flatten(bc)
     args = map(_reinterpret, bcf.args)
-    red(x) = posmod(x, char(F))
-    copyto!(_reinterpret(dest), broadcasted(red ∘ bcf.f, args...))
+    red(x) = posmod(x, char(F)) % inttype(F)
+    copyto!(reinterpret(inttype(F), dest), broadcasted(red ∘ bcf.f, args...))
     dest
 end
 

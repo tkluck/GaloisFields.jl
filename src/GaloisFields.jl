@@ -62,6 +62,7 @@ include("ExtensionFields.jl")
 include("BinaryFields.jl")
 include("Conversions.jl")
 include("Iterations.jl")
+include("Reinterpret.jl")
 include("Broadcast.jl")
 include("Display.jl")
 
