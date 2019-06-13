@@ -1,8 +1,7 @@
 """
     GaloisFields.Broadcast
 
-Currently, this module contains two distinct optimizations for
-`Vector{<:PrimeField}`:
+Currently, this module contains optimizations for `Vector{<:PrimeField}`.
 
 This module optimizes operations for Vector{<:PrimeField} by doing only a single
 mod(..., char(F)) operation for a fused broadcasted operation (e.g. `mod(x.n +
