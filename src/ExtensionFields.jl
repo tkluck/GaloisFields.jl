@@ -58,10 +58,8 @@ end
 function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
     a = copy(a)
     b = copy(b)
-    len_a = findlast(!iszero, a)
-    len_b = findlast(!iszero, b)
-    len_a === nothing && (len_a = 0)
-    len_b === nothing && (len_b = 0)
+    len_a = something(findlast(!iszero, a), 0)
+    len_b = something(findlast(!iszero, b), 0)
     m = max(len_a, len_b)
     s0, s1 = zeros(C, m), zeros(C, m)
     t0, t1 = zeros(C, m), zeros(C, m)
@@ -79,8 +77,7 @@ function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
             s2[deg_diff+1:end] .-= q .* s1[1:end-deg_diff]
             t2[deg_diff+1:end] .-= q .* t1[1:end-deg_diff]
 
-            len_a = findprev(!iszero, a, len_a-1)
-            len_a == nothing && (len_a = 0)
+            len_a = something(findprev(!iszero, a, len_a-1), 0)
         end
         a, b = b, a
         len_a, len_b = len_b, len_a
