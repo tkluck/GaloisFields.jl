@@ -17,6 +17,25 @@ end
 iterate(K::Type{<:BinaryField}) = K(Bits(), 0), 1
 iterate(K::Type{<:BinaryField}, state) = state < 2^n(K) ? (K(Bits(), state), state + 1) : nothing
 
+"""
+    Yield q^n in the smallest Signed that fits it
+    and is at least Int.
+"""
+function safepow(q::Signed, n)
+    q = q isa Base.SmallSigned ? Int(q) : q
+    bits = 8sizeof(q) -  leading_zeros(q)
+    m = n * bits
+    if m <= 8sizeof(q)
+        return q^n
+    elseif m <= 8sizeof(widen(typeof(q)))
+        return widen(q)^n
+    elseif m <= 8sizeof(Int128)
+        return Int128(q)^n
+    else
+        return BigInt(q)^n
+    end
+end
+
 Base.IteratorSize(::Type{<:AbstractGaloisField}) = Base.HasLength()
 Base.length(F::Type{<:PrimeField}) = char(F)
-Base.length(F::Type{<:AbstractGaloisField}) = length(basefield(F))^n(F)
+@generated Base.length(::Type{F}) where F <: AbstractGaloisField = safepow(length(basefield(F)), n(F))

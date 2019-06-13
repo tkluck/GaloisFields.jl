@@ -159,7 +159,12 @@ GaloisField(p::Integer, n::Integer) = GaloisField(p, n, gensym())
 GaloisField(factors::Factorization) = GaloisField(factors, gensym())
 
 function GaloisField(p::Integer, n::Integer, sym::Symbol)
-    𝔽ₚ = PrimeField{inttype(p), p}
+    I = inttype(p)
+    # standardize on what type of integer we use in the type
+    # parameter. This allows us to just write e.g. PrimeField{I, 2} where I
+    # instead of PrimeField{I, Int8(2)}.
+    J = p <= typemax(Int) ? Int : I
+    𝔽ₚ = PrimeField{inttype(p), J(p)}
     if n == 1
         return 𝔽ₚ
     else

@@ -91,7 +91,19 @@ function *(a::F, b::F) where F<:PrimeField
     F(NonNegative(), Base.widemul(a.n, b.n))
 end
 
-inv(a::F)     where F<:PrimeField = F(Reduced(), invmod(a.n, char(F)))
+"""
+    _invmod(n, m)
+
+Multiplicative inverse of n (mod m), assuming 0 <= n < m and m prime.
+"""
+function _invmod(n::T, m::T) where T<:Integer
+    g, x, y = gcdx(n, m)
+    r = x + ifelse(signbit(x), m, zero(m))
+    r
+end
+_invmod(n::Integer, m::Integer) = invmod(promote(n,m)...)
+
+inv(a::F)     where F<:PrimeField = iszero(a) ? throw(DivideError()) : F(Reduced(), _invmod(a.n, char(F)))
 /(a::F,b::F)  where F<:PrimeField = a * inv(b)
 //(a::F,b::F) where F<:PrimeField = a * inv(b)
 

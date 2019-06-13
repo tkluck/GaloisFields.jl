@@ -71,7 +71,7 @@ end
 
 @generated function zech_op(::Type{F}, op, args...) where F <: AbstractGaloisField
     p = char(F)
-    q = p^n(F)
+    q = length(F)
     default_condition = p != 2 && q < 2^16
     if get(overrides, F, default_condition)
         logtable, exptable, order = cycliclogtable(gen(F), q - 1)

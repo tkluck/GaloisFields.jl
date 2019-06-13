@@ -49,8 +49,8 @@ _upgrade(F::Type{<:AbstractExtensionField}, i::AbstractGaloisField) = _upgrade(F
 _upgrade(F::Type{<:ExtensionField{K}}, i::K) where
     K <: AbstractGaloisField =
     F(ntuple(j -> j == 1 ? i : zero(K), n(F)))
-_upgrade(F::Type{<:BinaryField}, i::PrimeField{I, 2}) where I =
-    F(Bits(), i.n)
+_upgrade(F::Type{<:BinaryField}, i::PrimeField{I, 2}) where I = F(Bits(), i.n)
+_upgrade(F::Type{<:PrimeField}, i::PrimeField) = F(Reduced(), i.n)
 
 function convert(K::Type{<:AbstractGaloisField}, x::PrimeField)
     if char(K) == char(typeof(x))
