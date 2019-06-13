@@ -2,19 +2,52 @@ using Test
 using Primes
 using GaloisFields
 
+const G = @GaloisField! 𝔽₂₉ α^2 - 2
+const H = @GaloisField! G   β^3 + 2β + 1
+const J = @GaloisField! H   γ^7 - 2
+
+const TestFields = [
+    @GaloisField ℤ/2ℤ
+    @GaloisField ℤ/3ℤ
+    @GaloisField ℤ/5ℤ
+    @GaloisField ℤ/7ℤ
+
+    @GaloisField! 𝔽₄ α
+    @GaloisField! 𝔽₉ β
+
+    @GaloisField! 𝔽₃ α^2 + 1
+
+    G
+    H
+    # disable: this computation is currently too slow
+    #J
+    [GaloisField(prevprime(typemax(I)))
+     for I in [Int8, Int16, Int32, Int64, Int128]]
+
+    @GaloisField! 𝔽₂ α^2 + α + 1
+    @GaloisField! 𝔽₅ α^2 - 2
+    @GaloisField! 2^2 α
+    @GaloisField! 5^2 α
+    @GaloisField! 5^6 α
+]
+
+const MAXITERATIONS = 5_000
+const MAXITERATIONS2 = round(Int, sqrt(MAXITERATIONS))
+const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
+
 @testset "GaloisFields" begin
-    @testset "Prime field arithmetic" begin
-        F = @GaloisField ℤ/37ℤ
-        @test char(F) == 37
-        @test repr(F) == "𝔽₃₇"
+    @testset "Arithmetic in $F" for F in TestFields
+        @test startswith(repr(F), "𝔽")
 
         @test F(1) + F(-1) == 0
         @test F(1) + F(1) == F(2)
-        @test F(36) + F(1) == 0
+        @test F(char(F) - 1) + F(1) == 0
 
-        @test F(35) / F(35) == 1
-        @test F(34) // F(34) == 1
-        @test F(34) // F(16) * F(16) == 34
+        iszero(F(35)) || @test F(35) / F(35) == 1
+        iszero(F(34)) || @test F(34) // F(34) == 1
+        iszero(F(16)) || @test F(34) // F(16) * F(16) == 34
+        @test_throws DivideError F(1) // F(0)
+        @test_throws DivideError F(0) // F(0)
 
         @test zero(F) + one(F) == 1
         @test iszero(zero(F))
@@ -22,27 +55,22 @@ using GaloisFields
 
         @test iszero(-F(0))
 
-        # test for correct handling of integer overflow
-        for I in [Int8, Int16, Int32, Int64, Int128]
-            p = prevprime(typemax(I))
-            G = GaloisField(p)
-            @test G(-1) * G(-1) == 1
-            @test G(-1) + G(-1) == -2
-            @test G(0) - G(-1) == 1
-        end
+        @test F(-1) * F(-1) == 1
+        @test F(-1) + F(-1) == -2
+        @test F(0) - F(-1) == 1
     end
 
-    @testset "Integer promotions" begin
-        F = @GaloisField ℤ/37ℤ
-
+    @testset "Integer promotion with $F" for F in TestFields
         @test F(2) + 4 == F(6)
         @test F(2) * 4 == F(8)
-        @test F(2) / 4 == F(2) / F(4)
-        @test F(2) // 4 == F(2) // F(4)
         @test 2 + F(4) == F(6)
         @test 2 * F(4) == F(8)
-        @test 2 / F(4) == F(2) / F(4)
-        @test 2 // F(4) == F(2) / F(4)
+        if !iszero(F(41))
+            @test F(2) / 41 == F(2) / F(41)
+            @test F(2) // 41 == F(2) // F(41)
+            @test 2 / F(41) == F(2) / F(41)
+            @test 2 // F(41) == F(2) / F(41)
+        end
     end
 
     @testset "Extensions of 𝔽₃" begin
@@ -113,29 +141,41 @@ using GaloisFields
         @test_throws GaloisFields.InclusionError G(β)
     end
 
-    @testset "Iterations" begin
-        I = @GaloisField ℤ/2ℤ
-        J = @GaloisField ℤ/3ℤ
-        F = @GaloisField! 𝔽₂ α^2 + α + 1
-        G = @GaloisField! 𝔽₅ α^2 - 2
-        H = @GaloisField! G   β^3 + β + 1
-        K = @GaloisField! 2^2 α
-        L = @GaloisField! 5^2 α
-        M = @GaloisField! 5^6 α
-        for Q in [I, J, F, G, H, K, L, M]
-            @test all(+x == x for x in Q)
-            @test all(-x == 0 - x for x in Q)
-            @test all(x^0 == 1 for x in Q)
-            @test all(x^length(Q) == x for x in Q)
-            @test all(x * inv(x) == 1 for x in Q if !iszero(x))
+    @testset "Full axiom tests for $F" for F in TestFields
+        if length(F) < MAXITERATIONS
+            elements = F
+        else
+            # TODO: if this ever ends up randomly failing, it will be very hard to
+            # reproduce and debug. I could set a seed, but I still prefer having
+            # broader coverage (random subset every time) over reproducibility
+            # since it's better to _know_ something is wrong than to only always
+            # test the same subset.
+            elements = rand(F, MAXITERATIONS)
         end
+        @test all(+x == x                       for x in elements)
+        @test all(one(F) * x == x               for x in elements)
+        @test all(x + -x == 0 == -x + x         for x in elements)
+        @test all(x^0 == 1                      for x in elements)
+        @test all(x * inv(x) == 1 == inv(x) * x for x in elements if !iszero(x))
 
-        for Q in [I, J, F, G, K, L] # the smaller ones
-            @test all( x + y == y + x for x in Q for y in Q)
-            @test all( +x == x for x in Q for y in Q)
-            @test all( x * y == y * x for x in Q for y in Q)
-            @test all( x / y == x * inv(y) for x in Q for y in Q if !iszero(y))
+        if length(F) < MAXITERATIONS2
+            pairs = [(x, y) for x in F for y in F]
+        else
+            pairs = [(rand(F), rand(F)) for _ in 1:MAXITERATIONS]
         end
+        @test all( x + y == y + x      for (x, y) in pairs)
+        @test all( x * y == y * x      for (x, y) in pairs)
+        @test all( x / y == x * inv(y) for (x, y) in pairs if !iszero(y))
+
+        if length(F) < MAXITERATIONS3
+            triples = [(x, y, z) for x in F for y in F for z in F]
+        else
+            triples = [(rand(F), rand(F), rand(F)) for _ in 1:MAXITERATIONS]
+        end
+        @test all((x + y) + z == x + (y + z)   for (x, y, z) in triples)
+        @test all((x * y) * z == x * (y * z)   for (x, y, z) in triples)
+        @test all((x + y) * z == x * z + y * z for (x, y, z) in triples)
+        @test all(x * (y + z) == x * y + x * z for (x, y, z) in triples)
     end
 
     @testset "Conway polynomial database" begin
@@ -183,8 +223,13 @@ using GaloisFields
         GaloisFields.enable_zech_multiplication(F)
         GaloisFields.disable_zech_multiplication(G)
 
-        @test x^3 + x + 1 == y^3 + y + 1
-        @test (x^3 + x) / (x + 1) == (y^3 + y) / (y + 1)
+        # remember that x and y are identified because we use Conway
+        # polynomials for both F and G.
+        Fpairs = rand(F, 1_00, 2)
+        Gpairs = map(G, Fpairs)
+        @test all(Fpairs[:, 1] .* Fpairs[:, 2] == Gpairs[:, 1] .* Gpairs[:, 2])
+        @test all(Fpairs[:, 1] ./ Fpairs[:, 2] == Gpairs[:, 1] ./ Gpairs[:, 2])
+        @test all(Fpairs[:, 1] .^ 2            == Gpairs[:, 1] .^ 2)
 
         H = @GaloisField! 2^20 z
         K = @GaloisField! 2^20 w
@@ -194,9 +239,6 @@ using GaloisFields
 
         @test z^100 + z + 1 == w^100 + w + 1
         @test (z^100 + z) / (z + 1) == (w^100 + w) / (w + 1)
-
-        @test_throws GaloisFields.InclusionError H(x)
-        @test_throws GaloisFields.InclusionError F(z)
     end
 
     @testset "Display" begin
@@ -246,6 +288,8 @@ using GaloisFields
         @test x[1]    .// F[y;]   == F.(x[1] .* invmod.(y, char(F)))
         @test F[x;]   .// F(y[1]) == F.(x    .* invmod(y[1], char(F)))
         @test F[x;]   .// y[1]    == F.(x    .* invmod(y[1], char(F)))
+
+        @test 3F[x;] == 3 .* F[x;] == F(3) * F[x;] == F(3) .* F[x;]
 
         @test F.(x) == F[x;]
         @test convert.(F, x) == F[x;]
