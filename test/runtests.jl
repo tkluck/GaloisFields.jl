@@ -144,11 +144,6 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         if length(F) < MAXITERATIONS
             elements = F
         else
-            # TODO: if this ever ends up randomly failing, it will be very hard to
-            # reproduce and debug. I could set a seed, but I still prefer having
-            # broader coverage (random subset every time) over reproducibility
-            # since it's better to _know_ something is wrong than to only always
-            # test the same subset.
             elements = rand(F, MAXITERATIONS)
         end
         @test all(+x == x                       for x in elements)
