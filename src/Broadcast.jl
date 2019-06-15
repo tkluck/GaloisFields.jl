@@ -48,7 +48,6 @@ _reinterpret(x::AbstractArray{<:PrimeField}) = reinterpret(_boundedtype(eltype(x
 function copyto!(dest::AbstractArray{F}, bc::Broadcasted{FusedModBroadcast{F}}) where F <: PrimeField
     bcf = flatten(bc)
     args = map(_reinterpret, bcf.args)
-    # TODO: we need to use typemax(x) to check that x is positive.
     red(x) = posmod(x, char(F)) % inttype(F)
     copyto!(reinterpret(inttype(F), dest), broadcasted(red ∘ bcf.f, args...))
     dest
