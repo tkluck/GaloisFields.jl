@@ -68,7 +68,7 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
             @test F(2) / 41 == F(2) / F(41)
             @test F(2) // 41 == F(2) // F(41)
             @test 2 / F(41) == F(2) / F(41)
-            @test 2 // F(41) == F(2) / F(41)
+            @test 2 // F(41) == F(2) // F(41)
         end
     end
 
