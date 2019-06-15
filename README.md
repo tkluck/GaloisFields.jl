@@ -28,8 +28,11 @@ F(2)^29 == F(2)
 β^27 == β
 ```
 
-The macros also accept pretty-printed versions: more difficult to type but more
-elegant to read:
+The exclamation mark `!` is intended to convey that the macro has a side-effect:
+for example, in the code above, it assigns a variable called `β`.
+
+The macros also accept special symbols for specifying the field. This is more
+difficult to type ([docs][unicode-input]) but more elegant to read:
 
 ```julia
 const F = @GaloisField ℤ/29ℤ
@@ -140,3 +143,4 @@ It is downloaded as part of the install process.
 [lubeck]: http://www.math.rwth-aachen.de/~Frank.Luebeck/index.html
 [db]: http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html?LANG=en
 [https-db]: https://gist.githubusercontent.com/tkluck/e1cd1746c69aa17e4a37114d22649627/raw/7fbe9763fae27f14924262ad03606f1c3af4400e/CPImport.txt
+[unicode-input]: https://docs.julialang.org/en/v1.1/manual/unicode-input/#Unicode-Input-1
