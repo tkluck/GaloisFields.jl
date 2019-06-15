@@ -147,6 +147,7 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
             elements = rand(F, MAXITERATIONS)
         end
         @test all(+x == x                       for x in elements)
+        @test all(zero(x) + x == x              for x in elements)
         @test all(one(F) * x == x               for x in elements)
         @test all(x + -x == 0 == -x + x         for x in elements)
         @test all(x^0 == 1                      for x in elements)
