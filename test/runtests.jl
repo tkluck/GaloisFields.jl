@@ -284,6 +284,11 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         @test F[x;] .- F[y;] == F.(x .- y)
         @test F[x;] ./ F[y;] == F.(x .* invmod.(y, char(F)))
 
+        @test tuple(F.(x)...) .+ tuple(F.(y)...) == tuple(F.(x .+ y)...)
+        @test tuple(F.(x)...) .* tuple(F.(y)...) == tuple(F.(x .* y)...)
+        @test tuple(F.(x)...) .- tuple(F.(y)...) == tuple(F.(x .- y)...)
+        @test tuple(F.(x)...) ./ tuple(F.(y)...) == tuple(F.(x .* invmod.(y, char(F)))...)
+
         @test F(x[1]) .+ F[y;] == F.(x[1] .+ y)
         @test x[1]    .+ F[y;] == F.(x[1] .+ y)
 
