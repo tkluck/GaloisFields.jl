@@ -303,6 +303,7 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         @test F[x;]   .// y[1]    == F.(x    .* invmod(y[1], char(F)))
 
         @test 3F[x;] == 3 .* F[x;] == F(3) * F[x;] == F(3) .* F[x;]
+        @test Int8(3) * F[x;] == Int8(3) .* F[x;] == F(3) * F[x;] == F(3) .* F[x;]
 
         @test F.(x) == F[x;]
         @test convert.(F, x) == F[x;]
