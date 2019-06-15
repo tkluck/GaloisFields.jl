@@ -19,8 +19,7 @@ const TestFields = [
 
     G
     H
-    # disable: this computation is currently too slow
-    #J
+    J
     [GaloisField(prevprime(typemax(I)))
      for I in [Int8, Int16, Int32, Int64, Int128]]
 
@@ -31,7 +30,7 @@ const TestFields = [
     @GaloisField! 5^6 α
 ]
 
-const MAXITERATIONS = 5_000
+const MAXITERATIONS = 1000
 const MAXITERATIONS2 = round(Int, sqrt(MAXITERATIONS))
 const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
 
@@ -156,7 +155,9 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         @test all(one(F) * x == x               for x in elements)
         @test all(x + -x == 0 == -x + x         for x in elements)
         @test all(x^0 == 1                      for x in elements)
+        @test all(x^length(F) == x              for x in elements)
         @test all(x * inv(x) == 1 == inv(x) * x for x in elements if !iszero(x))
+        @test all(inv(x) == x^(-1)              for x in elements if !iszero(x))
 
         if length(F) < MAXITERATIONS2
             pairs = [(x, y) for x in F for y in F]
@@ -223,13 +224,20 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         GaloisFields.enable_zech_multiplication(F)
         GaloisFields.disable_zech_multiplication(G)
 
-        # remember that x and y are identified because we use Conway
-        # polynomials for both F and G.
-        Fpairs = rand(F, 1_00, 2)
+        # double-check that x and y are identified because we use Conway
+        # polynomials for both F and G....
+        @test x == y
+        # ...which allows us to convert F to G
+        Fpairs = rand(F, 100, 2)
         Gpairs = map(G, Fpairs)
-        @test all(Fpairs[:, 1] .* Fpairs[:, 2] == Gpairs[:, 1] .* Gpairs[:, 2])
-        @test all(Fpairs[:, 1] ./ Fpairs[:, 2] == Gpairs[:, 1] ./ Gpairs[:, 2])
-        @test all(Fpairs[:, 1] .^ 2            == Gpairs[:, 1] .^ 2)
+
+        # at which indices can we divide by F[:, 2] ?
+        nz = findall(!iszero, Fpairs[:, 2])
+
+        # the actual tests
+        @test all(Fpairs[:,  1] .* Fpairs[:,  2] == Gpairs[:,  1] .* Gpairs[:,  2])
+        @test all(Fpairs[nz, 1] ./ Fpairs[nz, 2] == Gpairs[nz, 1] ./ Gpairs[nz, 2])
+        @test all(Fpairs[:,  1] .^ 2             == Gpairs[:,  1] .^ 2)
 
         H = @GaloisField! 2^20 z
         K = @GaloisField! 2^20 w
