@@ -125,7 +125,18 @@ end
 
 /(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
 //(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
-^(::Direct, a::F, n::Integer) where F <: ExtensionField = Base.power_by_squaring(a, n)
+function ^(::Direct, a::F, n::Integer) where F <: ExtensionField
+    # TODO: when length(F) is a BigInt, this allocates BigInt(n),
+    # which is a wasteful allocation when n is small.
+    n = mod(n, length(F) - 1)
+    if n >= div(length(F) - 1, 2)
+        n -= length(F) - 1
+    end
+    if n < 0
+        a, n = inv(a), -n
+    end
+    Base.power_by_squaring(a, n)
+end
 
 *(a::F, b::F)       where F <: ExtensionField = zech_op(F, *, a, b)
 /(a::F, b::F)       where F <: ExtensionField = zech_op(F, /, a, b)
