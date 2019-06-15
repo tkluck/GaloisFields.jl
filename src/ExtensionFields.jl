@@ -87,16 +87,30 @@ function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
     return (a, s0, t0)
 end
 
-function *(::Direct, a::F, b::F) where F <: ExtensionField
+@inline _conv(a, b, i, range) = sum(a[j] * b[i - j + 1] for j in range)
+@inline _convtuple(a, b, N) = ntuple(i -> _conv(a, b, i, 1 : i), N)
+@generated function *(::Direct, a::F, b::F) where F <: ExtensionField
     N = n(F)
-    coeffs = zeros(basefield(F), 2N - 1)
-    for (i, a_i) in enumerate(a.n)
-        for (j, b_j) in enumerate(b.n)
-            coeffs[i+j-1] += a_i * b_j
-        end
+    code = quote
+        res = _convtuple(a.n, b.n, $N)
     end
-    coeffs = _rem(coeffs, collect(minpoly(F)))
-    return F(ntuple(i -> coeffs[i], n(F)))
+    for i in N + 1 : 2N - 1
+        pow_of_generator = zeros(basefield(F), 2N - 1)
+        pow_of_generator[i] = one(basefield(F))
+        pow_of_generator_rem = _rem(pow_of_generator, collect(minpoly(F)))
+        pow_of_generator_tuple = tuple(pow_of_generator_rem[1:N]...)
+        c = quote
+            q = _conv(a.n, b.n, $i, $(i + 1 - N) : $N)
+            res = res .+ q .* $pow_of_generator_tuple
+        end
+        push!(code.args, c)
+    end
+
+    push!(code.args, quote
+        return F(res)
+    end)
+
+    code
 end
 
 function inv(::Direct, a::F) where F <: ExtensionField
