@@ -64,7 +64,7 @@ end
 function show(io::IO, F::Type{<:AbstractExtensionField})
     !isconcretetype(F) && return defaultshow(io, F)
 
-    q = BigInt(char(F)) ^ n(F)
+    q = length(F)
     number = replace("$q", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])
     write(io, "𝔽$number")
 end
