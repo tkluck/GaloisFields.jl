@@ -41,7 +41,7 @@ function inttype(p::Integer)
             return I
         end
     end
-    throw("Primes greater than Int128 are currently unsupported")
+    error("Primes greater than Int128 are currently unsupported")
 end
 
 # -----------------------------------------------------------------------------

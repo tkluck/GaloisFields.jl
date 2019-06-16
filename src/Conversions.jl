@@ -7,9 +7,9 @@ identifications = Dict()
 macro identify(expr)
     if expr.head == :call && expr.args[1] == :(=>)
         sym, target = expr.args[2:end]
-        throw("@GaloisFields.identify is now a function: use GaloisFields.identify($expr)")
+        error("@GaloisFields.identify is now a function: use GaloisFields.identify($expr)")
     else
-        throw("Usage: @identify <symbol> => <target value>")
+        error("Usage: @identify <symbol> => <target value>")
     end
 end
 
@@ -19,7 +19,7 @@ function identify(identification::Pair{K, L}) where
     global identifications
     (src, tgt) = identification
     if !(gen(typeof(src)) == src)
-        throw("Can only specify an identification through the generator of $K")
+        error("Can only specify an identification through the generator of $K")
     end
     if sum(c*tgt^(n-1) for (n, c) in enumerate(minpoly(K))) != 0
         throw(InclusionError("Invalid identification $identification: $tgt does not satisfy minimum polynomial for $src"))
