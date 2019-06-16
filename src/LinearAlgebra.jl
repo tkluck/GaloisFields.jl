@@ -17,12 +17,12 @@ function norm(F::Type{<:AbstractGaloisField}, x::AbstractGaloisField)
 end
 
 function tr(F::Type{<:AbstractGaloisField}, x::AbstractGaloisField)
-    q = length(F)
     qn = length(typeof(x))
+    q = oftype(qn, length(F))
     n = intlog(q, qn)
     res = zero(x)
     for i in 0 : n - 1
-        res += x^oftype(qn, q)^i
+        res += x^(q^i)
     end
     F(res)
 end
