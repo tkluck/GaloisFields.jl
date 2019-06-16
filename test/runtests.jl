@@ -2,6 +2,8 @@ using Test
 using Primes
 using GaloisFields
 
+using LinearAlgebra: norm, tr
+
 const G = @GaloisField! 𝔽₂₉ α^2 - 2
 const H = @GaloisField! G   β^3 + 2β + 1
 const J = @GaloisField! H   γ^7 - 2
@@ -136,6 +138,14 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
 
         @test α + β == β + α
         @test α + β + γ == γ + β + α
+
+        @test G(H(α)) == α
+        @test G(K(α)) == α
+
+        @test norm(G, γ) isa G
+        @test tr(G, γ) isa G
+        @test norm(H, γ) isa H
+        @test tr(H, γ) isa H
 
         @test_throws GaloisFields.InclusionError G(β)
     end

@@ -1,6 +1,7 @@
 @doc read(open(joinpath(@__DIR__, "..", "README.md")), String)
 module GaloisFields
 
+import LinearAlgebra: norm, tr
 import Random: AbstractRNG, SamplerType
 import Serialization: deserialize
 
@@ -65,6 +66,7 @@ include("Iterations.jl")
 include("Reinterpret.jl")
 include("Broadcast.jl")
 include("Display.jl")
+include("LinearAlgebra.jl")
 
 """
     const F = GaloisField(p)
@@ -296,5 +298,6 @@ if VERSION < v"1.3-"
 end
 
 export GaloisField, @GaloisField, @GaloisField!, char
+export norm, tr
 
 end
