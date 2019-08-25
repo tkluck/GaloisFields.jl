@@ -67,6 +67,7 @@ include("Reinterpret.jl")
 include("Broadcast.jl")
 include("Display.jl")
 include("LinearAlgebra.jl")
+include("PrimitiveRoots.jl")
 
 """
     const F = GaloisField(p)
