@@ -364,4 +364,6 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
                 GaloisFields.minimal_primitive_root(𝔽₁₀₃₁, n)
         end
     end
+
+    @test_throws ErrorException GaloisField(10)
 end
