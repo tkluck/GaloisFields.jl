@@ -178,7 +178,7 @@ end
 
 function GaloisField(factors::Factorization, sym::Symbol)
     if length(factors) != 1
-        error("There is no finite field of order $(prod(f))")
+        error("There is no finite field of order $(prod(factors))")
     end
     (p, n), = factors
     return GaloisField(p, n, sym)
