@@ -111,7 +111,7 @@ function _invmod(n::T, m::T) where T<:Integer
     r = x + ifelse(signbit(x), m, zero(m))
     r
 end
-_invmod(n::Integer, m::Integer) = invmod(promote(n,m)...)
+_invmod(n::Integer, m::Integer) = _invmod(promote(n, m)...)
 
 inv(a::F)     where F<:PrimeField = iszero(a) ? throw(DivideError()) : F(Reduced(), _invmod(a.n, char(F)))
 /(a::F,b::F)  where F<:PrimeField = a * inv(b)
