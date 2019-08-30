@@ -4,9 +4,9 @@
 Algebraic extension of a finite field ``F`` of degree ``N``.
 """
 struct ExtensionField{F <: AbstractGaloisField, N, α, MinPoly, Conway} <: AbstractExtensionField
-    n::NTuple{N, F}
-    ExtensionField{F, N, α, MinPoly, Conway}(n::NTuple{N, F}) where
-        {F <: AbstractGaloisField, N, α, MinPoly, Conway} = new(n)
+    coeffs :: NTuple{N, F}
+    ExtensionField{F, N, α, MinPoly, Conway}(coeffs::NTuple{N, F}) where
+        {F <: AbstractGaloisField, N, α, MinPoly, Conway} = new(coeffs)
 end
 
 basefield(::Type{ExtensionField{F, N, α, MinPoly, Conway}}) where {F, N, α, MinPoly, Conway} = F
@@ -16,7 +16,7 @@ genname(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, Mi
 minpoly(::Type{ExtensionField{F, N, α, MinPoly, Conway}})   where {F, N, α, MinPoly, Conway} = MinPoly
 isconway(::Type{ExtensionField{F, N, α, MinPoly, Conway}})  where {F, N, α, MinPoly, Conway} = Conway
 
-expansion(a::ExtensionField) = a.n
+expansion(a::ExtensionField) = a.coeffs
 
 # -----------------------------------------------------------------------------
 #
@@ -30,13 +30,13 @@ one( T::Type{<:ExtensionField}) =
 gen( T::Type{<:ExtensionField}) =
     T(ntuple(i -> i == 2 ? one(basefield(T)) : zero(basefield(T)), n(T)))
 
-+(a::F, b::F) where F<:ExtensionField = F(a.n .+ b.n)
--(a::F, b::F) where F<:ExtensionField = F(a.n .- b.n)
++(a::F, b::F) where F<:ExtensionField = F(a.coeffs .+ b.coeffs)
+-(a::F, b::F) where F<:ExtensionField = F(a.coeffs .- b.coeffs)
 
 +(a::ExtensionField) = copy(a)
--(a::ExtensionField) = typeof(a)(.-a.n)
+-(a::ExtensionField) = typeof(a)(.-a.coeffs)
 
-iszero(a::ExtensionField) = all(iszero, a.n)
+iszero(a::ExtensionField) = all(iszero, a.coeffs)
 
 # -----------------------------------------------------------------------------
 #
@@ -92,7 +92,7 @@ end
 @generated function *(::Direct, a::F, b::F) where F <: ExtensionField
     N = n(F)
     code = quote
-        res = _convtuple(a.n, b.n, $N)
+        res = _convtuple(a.coeffs, b.coeffs, $N)
     end
     for i in N + 1 : 2N - 1
         pow_of_generator = zeros(basefield(F), 2N - 1)
@@ -100,7 +100,7 @@ end
         pow_of_generator_rem = _rem(pow_of_generator, collect(minpoly(F)))
         pow_of_generator_tuple = tuple(pow_of_generator_rem[1:N]...)
         c = quote
-            q = _conv(a.n, b.n, $i, $(i + 1 - N) : $N)
+            q = _conv(a.coeffs, b.coeffs, $i, $(i + 1 - N) : $N)
             res = res .+ q .* $pow_of_generator_tuple
         end
         push!(code.args, c)
@@ -116,7 +116,7 @@ end
 function inv(::Direct, a::F) where F <: ExtensionField
     iszero(a) && throw(DivideError())
     N = n(F)
-    coeffs = collect(a.n)
+    coeffs = collect(a.coeffs)
     d, u, v = _gcdx(coeffs, collect(minpoly(F)))
     @assert !iszero(d[1]) && all(iszero, @view d[2:end])
     u ./= d[1]
@@ -154,7 +154,7 @@ function convert(F::Type{<:ExtensionField}, i::Integer)
     convert(F, convert(basefield(F), i))
 end
 
-(::Type{F})(n::F) where F<:ExtensionField = F(n.n)
+(::Type{F})(n::F) where F<:ExtensionField = F(n.coeffs)
 
 # -----------------------------------------------------------------------------
 #
