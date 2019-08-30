@@ -29,7 +29,7 @@ function cycliclogtable(cyclic_generator, limit)
         push!(table, (x, n))
         x = *(Direct(), x, cyclic_generator)
         n += 1
-        @assert n <= limit
+        @assert n <= limit "Exceeding limit while trying to compute log table for $(typeof(cyclic_generator))"
     end
 
     result = (Dict(x => n for (x, n) in table), Dict(n => x for (x, n) in table), n)
