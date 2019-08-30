@@ -91,6 +91,16 @@ function *(a::F, b::F) where F<:PrimeField
     F(NonNegative(), Base.widemul(a.n, b.n))
 end
 
+function *(a::PrimeField, b::Integer)
+    iszero(a) && return zero(a)
+    iszero(b) && return zero(a)
+    isone(a) && return oftype(a, b)
+    isone(b) && return +a
+    oftype(a, Base.widemul(a.n, b))
+end
+
+*(a::Integer, b::PrimeField) = b * a
+
 """
     _invmod(n, m)
 

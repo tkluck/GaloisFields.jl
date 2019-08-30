@@ -72,6 +72,13 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
             @test 2 / F(41) == F(2) / F(41)
             @test 2 // F(41) == F(2) // F(41)
         end
+        @testset "Overflow of $I" for I in [Int8, Int16, Int32, Int64, Int128]
+            for i in (typemin(I), typemax(I))
+                @test F(2) + i == F(big"2" + i)
+                @test F(2) - i == F(big"2" - i)
+                @test F(2) * i == F(big"2" * i)
+            end
+        end
     end
 
     @testset "Extensions of 𝔽₃" begin

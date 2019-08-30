@@ -146,6 +146,20 @@ inv(a::F)           where F <: ExtensionField = zech_op(F, inv, a)
 
 # -----------------------------------------------------------------------------
 #
+# Integer and basefield operations
+#
+# -----------------------------------------------------------------------------
+function *(a::F, b::ExtensionField{F}) where F <: AbstractGaloisField
+    typeof(b)(a .* b.coeffs)
+end
+
+*(a::ExtensionField{F}, b::F) where F <: AbstractGaloisField = b * a
+
+*(a::Integer, b::ExtensionField) = typeof(b)(a .* b.coeffs)
+*(a::ExtensionField, b::Integer) = b * a
+
+# -----------------------------------------------------------------------------
+#
 # Constructors and promotion
 #
 # -----------------------------------------------------------------------------
