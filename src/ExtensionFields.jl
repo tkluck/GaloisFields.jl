@@ -1,3 +1,5 @@
+import Base: @pure
+
 """
     F = ExtensionField{F <: AbstractGaloisField, N, α, MinPoly}
 
@@ -87,28 +89,68 @@ function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
     return (a, s0, t0)
 end
 
-@inline _conv(a, b, i, range) = sum(a[j] * b[i - j + 1] for j in range)
-@inline _convtuple(a, b, N) = ntuple(i -> _conv(a, b, i, 1 : i), N)
+@pure @generated function _pow_of_generator_rem(::Type{F}, m) where F <: ExtensionField
+    N = n(F)
+    pows = map(N : 2N - 2) do i
+        pow_of_generator = zeros(basefield(F), 2N - 1)
+        pow_of_generator[i + 1] = one(basefield(F))
+        pow_of_generator_rem = _rem(pow_of_generator, collect(minpoly(F)))
+        (i, F(tuple(pow_of_generator_rem[1:N]...)))
+    end
+    quote
+        $(
+        map(pows) do p
+            :( m == $(p[1]) && return $(p[2]) )
+        end...
+        )
+        error("_pow_of_generator_rem: m (=$m) should be between $(n(F)) and $(2n(F) - 1)")
+    end
+end
+
+@inline function _convolution_of_range(F, vec1, vec2, N, lo, hi)
+    res = sum(vec1[i] * vec2[N - i + 1] for i in lo:hi)
+    return F(res)
+end
+
+const _ApplicableInteger = Union{Int8, Int16, Int32}
+@inline function _convolution_of_range(::Type{F}, vec1::Vec, vec2::Vec, N, lo, hi) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
+    p = char(F)
+    STEP = leading_zeros(zero(Int64)) - 2(leading_zeros(zero(p)) - leading_zeros(p))
+    @assert STEP >= 1
+
+    res = zero(Int64)
+    for i in lo:STEP:hi
+        for k in i:min(i + STEP - 1, hi)
+            res += Base.widemul(vec1[k].n, vec2[N - k + 1].n)
+        end
+        res = rem(res, p)
+    end
+    res = F(Reduced(), res)
+    res
+end
+
 @generated function *(::Direct, a::F, b::F) where F <: ExtensionField
     N = n(F)
+    coeffs = [Symbol(:coeff, i) for i in 1:N]
     code = quote
-        res = _convtuple(a.coeffs, b.coeffs, $N)
+    end
+    for j in 1:N
+        push!(code.args, :( $(coeffs[j]) = _convolution_of_range(basefield(F), a.coeffs, b.coeffs, $j, 1, $j)))
     end
     for i in N + 1 : 2N - 1
-        pow_of_generator = zeros(basefield(F), 2N - 1)
-        pow_of_generator[i] = one(basefield(F))
-        pow_of_generator_rem = _rem(pow_of_generator, collect(minpoly(F)))
-        pow_of_generator_tuple = tuple(pow_of_generator_rem[1:N]...)
-        c = quote
-            q = _conv(a.coeffs, b.coeffs, $i, $(i + 1 - N) : $N)
-            res = res .+ q .* $pow_of_generator_tuple
+        c = :( if (q = _convolution_of_range(basefield(F), a.coeffs, b.coeffs, $i, $(i + 1 - N), $N)) |> !iszero
+        end )
+        coeffs_to_add = _pow_of_generator_rem(F, i - 1).coeffs
+        for j in 1 : N
+            if !iszero(coeffs_to_add[j])
+                push!(c.args[2].args, :( $(coeffs[j]) += q * $(coeffs_to_add[j]) ))
+            end
         end
         push!(code.args, c)
     end
 
-    push!(code.args, quote
-        return F(res)
-    end)
+    res_tuple_expr = :( tuple($(coeffs...)) )
+    push!(code.args, :( return F($res_tuple_expr) ))
 
     code
 end
