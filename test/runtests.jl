@@ -366,4 +366,5 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
     end
 
     @test_throws ErrorException GaloisField(10)
+    @test_throws ErrorException GaloisField(10, 1)
 end

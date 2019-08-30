@@ -162,6 +162,7 @@ GaloisField(p::Integer, n::Integer) = GaloisField(p, n, gensym())
 GaloisField(factors::Factorization) = GaloisField(factors, gensym())
 
 function GaloisField(p::Integer, n::Integer, sym::Symbol)
+    isprime(p) || error("There is no finite field of characteristic $p")
     I = inttype(p)
     # standardize on what type of integer we use in the type
     # parameter. This allows us to just write e.g. PrimeField{I, 2} where I
