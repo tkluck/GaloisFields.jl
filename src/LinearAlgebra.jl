@@ -21,8 +21,10 @@ function tr(F::Type{<:AbstractGaloisField}, x::AbstractGaloisField)
     q = oftype(qn, length(F))
     n = intlog(q, qn)
     res = zero(x)
+    xqi = x  # loop invariant: xqi = x^(q^i)
     for i in 0 : n - 1
-        res += x^(q^i)
+        res += xqi
+        xqi = xqi^q
     end
     F(res)
 end
