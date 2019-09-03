@@ -1,5 +1,7 @@
 import Base.Checked: add_with_overflow, sub_with_overflow
 
+import .Util: hilo_mul
+
 """
     posmod(x, y)
 
@@ -52,6 +54,13 @@ end
 zero(F::Type{<:PrimeField}) = F(Reduced(), zero(inttype(F)))
 one( F::Type{<:PrimeField}) = F(Reduced(),  one(inttype(F)))
 
+@Base.pure function _power_of_two(n, p)
+    return rem(big"2"^n, p) % typeof(p)
+end
+
+@Base.pure _overflow_value(F, I) = _power_of_two(leading_zeros(zero(I)), char(F))
+@Base.pure _overflow_value(F) = _overflow_value(F, inttype(F))
+
 function +(a::F, b::F) where F<:PrimeField
     iszero(a) && return +b
     iszero(b) && return +a
@@ -89,6 +98,32 @@ function *(a::F, b::F) where F<:PrimeField
     isone(a) && return +b
     isone(b) && return +a
     F(NonNegative(), Base.widemul(a.n, b.n))
+end
+
+*(a::F, b::F) where F <: PrimeField{Int128} = a * b.n # use allocation-free function below
+
+# a version that avoids widemul (which allocates a BigInt for Int128)
+function *(a::F, b::Union{Int8, Int16, Int32, Int64, Int128}) where F <: PrimeField{Int128}
+    iszero(a) && return zero(F)
+    iszero(b) && return zero(F)
+    isone(a) && return F(b)
+    isone(b) && return +a
+
+    u = a.n
+    v = Int128(b)
+    res = zero(UInt128)
+
+    while true
+        hi, lo = hilo_mul(u, v)
+
+        res, overflow = add_with_overflow(res, lo)
+        hi += overflow
+
+        iszero(hi) && return F(res)
+
+        u = hi
+        v = _overflow_value(F, UInt128)
+    end
 end
 
 function *(a::PrimeField, b::Integer)
