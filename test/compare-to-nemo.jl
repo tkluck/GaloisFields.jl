@@ -15,8 +15,15 @@ function benchmarks!(grp, x)
 end
 
 function compare!(p, n)
-    D, α = GaloisField(p, n, :α)
-    E, β = FiniteField(p, n, "β")
+    if n == 1
+        D = GaloisField(p, n, :α)
+        α = rand(D)
+        E, _ = FiniteField(p, n, "β")
+        β = rand(E)
+    else
+        D, α = GaloisField(p, n, :α)
+        E, β = FiniteField(p, n, "β")
+    end
     galoisfields["q=$p^$n"] = benchmarks!(BenchmarkGroup(), α)
     nemo["q=$p^$n"] = benchmarks!(BenchmarkGroup(), β)
 end
