@@ -37,6 +37,25 @@ const MAXITERATIONS2 = round(Int, sqrt(MAXITERATIONS))
 const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
 
 @testset "GaloisFields" begin
+    @testset "Constructors" begin
+        F = @GaloisField 3
+        @test char(F) == 3
+        F, α = @GaloisField 9
+        @test char(F) == 3
+
+        F = @GaloisField ℤ/3ℤ
+        @test char(F) == 3
+
+        #F = @GaloisField ℤ/170141183460469231731687303715884105727ℤ
+        #@test char(F) == 170141183460469231731687303715884105727
+        F = @GaloisField 𝔽₁₇₀₁₄₁₁₈₃₄₆₀₄₆₉₂₃₁₇₃₁₆₈₇₃₀₃₇₁₅₈₈₄₁₀₅₇₂₇
+        @test char(F) == 170141183460469231731687303715884105727
+
+        #p = 29
+        #F = @GaloisField ℤ/(p*ℤ)
+        #@test char(F) == p
+    end
+
     @testset "Arithmetic in $F" for F in TestFields
         @test startswith(repr(F), "𝔽")
 

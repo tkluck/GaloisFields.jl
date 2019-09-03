@@ -235,7 +235,7 @@ function _parse_declaration(expr)
         if str[1] == '𝔽'
             s = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
             indices = indexin(str[2:end], s)
-            q = 0
+            q = zero(BigInt)
             for ix in indices
                 q = 10q + ix - 1
             end
