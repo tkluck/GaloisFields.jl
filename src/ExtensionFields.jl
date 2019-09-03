@@ -112,6 +112,8 @@ end
     return F(res)
 end
 
+@inline _self_convolution_of_range(F, vec, N, lo, hi) = _convolution_of_range(F, vec, vec, N, lo, hi)
+
 const _ApplicableInteger = Union{Int8, Int16, Int32}
 @inline function _convolution_of_range(::Type{F}, vec1::Vec, vec2::Vec, N, lo, hi) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
     p = char(F)
@@ -167,7 +169,16 @@ end
 
 /(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
 //(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
-function ^(::Direct, a::F, n::Integer) where F <: ExtensionField
+^(::Direct, a::F, n::Integer) where F <: ExtensionField = Base.power_by_squaring(a, n)
+
+*(a::F, b::F)       where F <: ExtensionField = zech_op(F, *, a, b)
+/(a::F, b::F)       where F <: ExtensionField = zech_op(F, /, a, b)
+//(a::F, b::F)      where F <: ExtensionField = zech_op(F, //, a, b)
+^(a::F, n::Integer) where F <: ExtensionField = zech_op(F, ^, a, n)
+inv(a::F)           where F <: ExtensionField = zech_op(F, inv, a)
+
+function Base.power_by_squaring(a::F, n::Integer) where F <: ExtensionField
+    iszero(a) && return iszero(n) ? one(a) : zero(a)
     # TODO: when length(F) is a BigInt, this allocates BigInt(n),
     # which is a wasteful allocation when n is small.
     n = mod(n, length(F) - 1)
@@ -177,14 +188,70 @@ function ^(::Direct, a::F, n::Integer) where F <: ExtensionField
     if n < 0
         a, n = inv(a), -n
     end
-    Base.power_by_squaring(a, n)
+    n == 0 && return one(a)
+
+    t = trailing_zeros(n) + 1
+    n >>= t
+    while (t -= 1) > 0
+        a = a^2
+    end
+    b = a
+    while n > 0
+        t = trailing_zeros(n) + 1
+        n >>= t
+        while (t -= 1) >= 0
+            a = a^2
+        end
+        b *= a
+    end
+    return b
 end
 
-*(a::F, b::F)       where F <: ExtensionField = zech_op(F, *, a, b)
-/(a::F, b::F)       where F <: ExtensionField = zech_op(F, /, a, b)
-//(a::F, b::F)      where F <: ExtensionField = zech_op(F, //, a, b)
-^(a::F, n::Integer) where F <: ExtensionField = zech_op(F, ^, a, n)
-inv(a::F)           where F <: ExtensionField = zech_op(F, inv, a)
+@inline function _self_convolution_of_range(::Type{F}, vec::Vec, N, lo, hi) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
+    p = char(F)
+    STEP = leading_zeros(zero(Int64)) - 2(leading_zeros(zero(p)) - leading_zeros(p) + 1)
+    @assert STEP >= 1
+
+    mid = div(lo + hi, 2)
+    mid_counts_once = isodd(hi - lo + 1)
+
+    res = zero(Int64)
+    for i in lo:STEP:mid
+        for k in i:min(i + STEP - 1, mid)
+            factor = ifelse(mid_counts_once && k == mid, 1, 2)
+            res += factor * Base.widemul(vec[k].n, vec[N - k + 1].n)
+        end
+        res = rem(res, p)
+    end
+    res = F(Reduced(), res)
+    res
+end
+
+@generated function Base.literal_pow(::typeof(^), a::F, ::Val{2}) where F <: ExtensionField
+    N = n(F)
+    coeffs = [Symbol(:coeff, i) for i in 1:N]
+    code = quote
+    end
+    for j in 1:N
+        push!(code.args, :( $(coeffs[j]) = _self_convolution_of_range(basefield(F), a.coeffs, $j, 1, $j)))
+    end
+    for i in N + 1 : 2N - 1
+        c = :( if (q = _self_convolution_of_range(basefield(F), a.coeffs, $i, $(i + 1 - N), $N)) |> !iszero
+        end )
+        coeffs_to_add = _pow_of_generator_rem(F, i - 1).coeffs
+        for j in 1 : N
+            if !iszero(coeffs_to_add[j])
+                push!(c.args[2].args, :( $(coeffs[j]) += q * $(coeffs_to_add[j]) ))
+            end
+        end
+        push!(code.args, c)
+    end
+
+    res_tuple_expr = :( tuple($(coeffs...)) )
+    push!(code.args, :( return F($res_tuple_expr) ))
+
+    code
+end
 
 # -----------------------------------------------------------------------------
 #
