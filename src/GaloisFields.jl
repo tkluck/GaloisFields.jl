@@ -154,6 +154,9 @@ function conwaypolynomial(p::Integer, n::Integer)
     if _conwaypolynomials == nothing
         _conwaypolynomials = deserialize(open(DATAFILE))
     end
+    if (p, n) ∉ keys(_conwaypolynomials)
+        error("No Conway polynomial for $p^$n in the database. Please specify one using e.g. @GaloisField! $p <some polynomial>")
+    end
     return _conwaypolynomials[p, n]
 end
 
