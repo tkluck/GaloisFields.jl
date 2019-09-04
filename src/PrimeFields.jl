@@ -67,7 +67,15 @@ function +(a::F, b::F) where F<:PrimeField
     if char(F) > div(typemax(inttype(F)), 2)
         m, overflowed = add_with_overflow(a.n, b.n)
         if overflowed
+            # the effect of the overflow is that typemax(I) + 1
+            # is replaced by typemin(I). In other words, we
+            # basically substracted
+            #     typemax(I) + 1 - typemin(I)
+            # We need to add it back to make up for this. And
+            # because we're about to do a mod p reduction,
+            # we can add back the mod p residue class.
             m += 2rem(typemax(inttype(F)), char(F)) + 2
+            # TODO: can this last operation overflow?
         end
         F(m) # note: not necessarily non-negative in this case!
     else
@@ -81,6 +89,8 @@ function -(a::F, b::F) where F<:PrimeField
     if char(F) > div(typemax(inttype(F)), 2)
         m, overflowed = sub_with_overflow(a.n, b.n)
         if overflowed
+            # see above for an explanation of this magic
+            # number.
             m -= 2rem(typemax(inttype(F)), char(F)) + 2
         end
         F(m) # note: not necessarily non-negative in this case!
@@ -113,6 +123,7 @@ function *(a::F, b::Union{Int8, Int16, Int32, Int64, Int128}) where F <: PrimeFi
     v = Int128(b)
     res = zero(UInt128)
 
+    # TODO: prove that this terminates
     while true
         hi, lo = hilo_mul(u, v)
 
