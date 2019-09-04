@@ -59,7 +59,7 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         n = 10
         F = @GaloisField! p^n δ
         @test char(F) == p
-        @test δ^(p^n) == δ
+        @test δ^(Int64(p)^n) == δ
     end
 
     @testset "Arithmetic in $F" for F in TestFields
