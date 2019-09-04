@@ -13,6 +13,7 @@ const TestFields = [
     @GaloisField ℤ/3ℤ
     @GaloisField ℤ/5ℤ
     @GaloisField ℤ/7ℤ
+    @GaloisField ℤ/67ℤ
 
     @GaloisField! 𝔽₄ α
     @GaloisField! 𝔽₉ β
