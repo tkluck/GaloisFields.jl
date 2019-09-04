@@ -47,14 +47,19 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         F = @GaloisField ℤ/3ℤ
         @test char(F) == 3
 
-        #F = @GaloisField ℤ/170141183460469231731687303715884105727ℤ
-        #@test char(F) == 170141183460469231731687303715884105727
+        F = @GaloisField ℤ/170141183460469231731687303715884105727ℤ
+        @test char(F) == 170141183460469231731687303715884105727
         F = @GaloisField 𝔽₁₇₀₁₄₁₁₈₃₄₆₀₄₆₉₂₃₁₇₃₁₆₈₇₃₀₃₇₁₅₈₈₄₁₀₅₇₂₇
         @test char(F) == 170141183460469231731687303715884105727
 
-        #p = 29
-        #F = @GaloisField ℤ/(p*ℤ)
-        #@test char(F) == p
+        p = 29
+        F = @GaloisField ℤ/(p*ℤ)
+        @test char(F) == p
+
+        n = 10
+        F = @GaloisField! p^n δ
+        @test char(F) == p
+        @test δ^(p^n) == δ
     end
 
     @testset "Arithmetic in $F" for F in TestFields

@@ -207,11 +207,11 @@ macro GaloisField(expr)
     if res === nothing
         error("Not implemented: @GaloisField $expr")
     end
-    return GaloisField(res)
+    return :( GaloisField($res) )
 end
 
 function _factorization(p::Integer, n::Integer)
-    return Factorization{Int}(Dict(p => n))
+    return Factorization{typeof(p)}(Dict(p => n))
 end
 
 function _parse_declaration(expr)
@@ -224,12 +224,11 @@ function _parse_declaration(expr)
             expr.args[2] == :ℤ && expr.args[3].head == :call &&
             expr.args[3].args[1] == :* && expr.args[3].args[3] == :ℤ
             p = expr.args[3].args[2]
-            factors = _factorization(p, 1)
+            factors = :( _factorization($(esc(p)), 1) )
             return factors
-        elseif expr.head == :call && expr.args[1] == :^ &&
-            expr.args[2] isa Integer && expr.args[3] isa Integer
+        elseif expr.head == :call && expr.args[1] == :^
             p, n = expr.args[2:end]
-            factors = _factorization(p, n)
+            factors = :( _factorization($(esc(p)), $(esc(n))) )
             return factors
         end
     # @GaloisField 𝔽₃₇
@@ -293,7 +292,7 @@ macro GaloisField!(expr, minpoly)
     decl = _parse_declaration(expr)
     F = something(decl, esc(expr))
     quote
-        EF, $(esc(sym)) = $GaloisField($F, $poly)
+        EF, $(esc(sym)) = GaloisField($F, $poly)
         EF
     end
 end
