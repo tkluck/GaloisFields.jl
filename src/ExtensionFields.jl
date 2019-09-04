@@ -1,4 +1,4 @@
-import Base: @pure
+import Base: @pure, power_by_squaring, literal_pow, widemul
 
 """
     F = ExtensionField{F <: AbstractGaloisField, N, α, MinPoly}
@@ -107,55 +107,10 @@ end
     end
 end
 
-@inline function _convolution_of_range(F, vec1, vec2, N, lo, hi)
-    res = sum(vec1[i] * vec2[N - i + 1] for i in lo:hi)
-    return F(res)
-end
+*(::Direct, a::F, b::F) where F <: ExtensionField = _mul_generated(F, a.coeffs, b.coeffs)
 
-@inline _self_convolution_of_range(F, vec, N, lo, hi) = _convolution_of_range(F, vec, vec, N, lo, hi)
+literal_pow(::typeof(^), a::F, ::Val{2}) where F <: ExtensionField = _mul_generated(F, a.coeffs)
 
-const _ApplicableInteger = Union{Int8, Int16, Int32}
-@inline function _convolution_of_range(::Type{F}, vec1::Vec, vec2::Vec, N, lo, hi) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
-    p = char(F)
-    STEP = leading_zeros(zero(Int64)) - 2(leading_zeros(zero(p)) - leading_zeros(p))
-    @assert STEP >= 1
-
-    res = zero(Int64)
-    for i in lo:STEP:hi
-        for k in i:min(i + STEP - 1, hi)
-            res += Base.widemul(vec1[k].n, vec2[N - k + 1].n)
-        end
-        res = rem(res, p)
-    end
-    res = F(Reduced(), res)
-    res
-end
-
-@generated function *(::Direct, a::F, b::F) where F <: ExtensionField
-    N = n(F)
-    coeffs = [Symbol(:coeff, i) for i in 1:N]
-    code = quote
-    end
-    for j in 1:N
-        push!(code.args, :( $(coeffs[j]) = _convolution_of_range(basefield(F), a.coeffs, b.coeffs, $j, 1, $j)))
-    end
-    for i in N + 1 : 2N - 1
-        c = :( if (q = _convolution_of_range(basefield(F), a.coeffs, b.coeffs, $i, $(i + 1 - N), $N)) |> !iszero
-        end )
-        coeffs_to_add = _pow_of_generator_rem(F, i - 1).coeffs
-        for j in 1 : N
-            if !iszero(coeffs_to_add[j])
-                push!(c.args[2].args, :( $(coeffs[j]) += q * $(coeffs_to_add[j]) ))
-            end
-        end
-        push!(code.args, c)
-    end
-
-    res_tuple_expr = :( tuple($(coeffs...)) )
-    push!(code.args, :( return F($res_tuple_expr) ))
-
-    code
-end
 
 function inv(::Direct, a::F) where F <: ExtensionField
     iszero(a) && throw(DivideError())
@@ -169,7 +124,7 @@ end
 
 /(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
 //(::Direct, a::F, b::F) where F <: ExtensionField = a * inv(b)
-^(::Direct, a::F, n::Integer) where F <: ExtensionField = Base.power_by_squaring(a, n)
+^(::Direct, a::F, n::Integer) where F <: ExtensionField = power_by_squaring(a, n)
 
 *(a::F, b::F)       where F <: ExtensionField = zech_op(F, *, a, b)
 /(a::F, b::F)       where F <: ExtensionField = zech_op(F, /, a, b)
@@ -177,7 +132,7 @@ end
 ^(a::F, n::Integer) where F <: ExtensionField = zech_op(F, ^, a, n)
 inv(a::F)           where F <: ExtensionField = zech_op(F, inv, a)
 
-function Base.power_by_squaring(a::F, n::Integer) where F <: ExtensionField
+function power_by_squaring(a::F, n::Integer) where F <: ExtensionField
     iszero(a) && return iszero(n) ? one(a) : zero(a)
     # TODO: when length(F) is a BigInt, this allocates BigInt(n),
     # which is a wasteful allocation when n is small.
@@ -207,7 +162,31 @@ function Base.power_by_squaring(a::F, n::Integer) where F <: ExtensionField
     return b
 end
 
-@inline function _self_convolution_of_range(::Type{F}, vec::Vec, N, lo, hi) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
+@inline function _convolution(F, N, lo, hi, vec1, vec2)
+    res = sum(vec1[i] * vec2[N - i + 1] for i in lo:hi)
+    return F(res)
+end
+
+@inline _convolution(F, N, lo, hi, vec) = _convolution(F, N, lo, hi, vec, vec)
+
+const _ApplicableInteger = Union{Int8, Int16, Int32}
+@inline function _convolution(::Type{F}, N, lo, hi, vec1::Vec, vec2::Vec) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
+    p = char(F)
+    STEP = leading_zeros(zero(Int64)) - 2(leading_zeros(zero(p)) - leading_zeros(p))
+    @assert STEP >= 1
+
+    res = zero(Int64)
+    for i in lo:STEP:hi
+        for k in i:min(i + STEP - 1, hi)
+            res += widemul(vec1[k].n, vec2[N - k + 1].n)
+        end
+        res = rem(res, p)
+    end
+    res = F(Reduced(), res)
+    res
+end
+
+@inline function _convolution(::Type{F}, N, lo, hi, vec::Vec) where Vec <: NTuple{M, F} where F <: PrimeField{<:_ApplicableInteger} where M
     p = char(F)
     STEP = leading_zeros(zero(Int64)) - 2(leading_zeros(zero(p)) - leading_zeros(p) + 1)
     @assert STEP >= 1
@@ -219,7 +198,7 @@ end
     for i in lo:STEP:mid
         for k in i:min(i + STEP - 1, mid)
             factor = ifelse(mid_counts_once && k == mid, 1, 2)
-            res += factor * Base.widemul(vec[k].n, vec[N - k + 1].n)
+            res += factor * widemul(vec[k].n, vec[N - k + 1].n)
         end
         res = rem(res, p)
     end
@@ -227,16 +206,19 @@ end
     res
 end
 
-@generated function Base.literal_pow(::typeof(^), a::F, ::Val{2}) where F <: ExtensionField
+# in case of length(operands) == 1: compute its square
+# in case of length(operands) == 2: compute their product
+# (ugly interface, but reduces code duplication)
+@generated function _mul_generated(::Type{F}, operands...) where F <: ExtensionField
     N = n(F)
     coeffs = [Symbol(:coeff, i) for i in 1:N]
     code = quote
     end
     for j in 1:N
-        push!(code.args, :( $(coeffs[j]) = _self_convolution_of_range(basefield(F), a.coeffs, $j, 1, $j)))
+        push!(code.args, :( $(coeffs[j]) = _convolution(basefield(F), $j, 1, $j, operands...)))
     end
     for i in N + 1 : 2N - 1
-        c = :( if (q = _self_convolution_of_range(basefield(F), a.coeffs, $i, $(i + 1 - N), $N)) |> !iszero
+        c = :( if (q = _convolution(basefield(F), $i, $(i + 1 - N), $N, operands...)) |> !iszero
         end )
         coeffs_to_add = _pow_of_generator_rem(F, i - 1).coeffs
         for j in 1 : N
