@@ -43,7 +43,10 @@ function inttype(p::Integer)
             return I
         end
     end
-    error("Primes greater than Int128 are currently unsupported")
+    if !isbitstype(typeof(p))
+        error("Integer type of prime must be a bitstype or fit within Int128.")
+    end
+    return typeof(p)
 end
 
 # -----------------------------------------------------------------------------
