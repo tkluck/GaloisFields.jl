@@ -46,11 +46,11 @@ function _joinbounds(op, b, c)
 end
 
 @inline function _mintype(bounds)
-    first(bounds) >=   typemin(Int8) && last(bounds) <=   typemax(Int8) && return   Int8
-    first(bounds) >=  typemin(Int16) && last(bounds) <=  typemax(Int16) && return  Int16
-    first(bounds) >=  typemin(Int32) && last(bounds) <=  typemax(Int32) && return  Int32
-    first(bounds) >=  typemin(Int64) && last(bounds) <=  typemax(Int64) && return  Int64
-    first(bounds) >= typemin(Int128) && last(bounds) <= typemax(Int128) && return Int128
+    T = Int8
+    while T != BigInt
+        first(bounds) >= typemin(T) && last(bounds) <= typemax(T) && return T
+        T = widen(T)
+    end
     error("BoundedInteger out of bounds: $bounds")
 end
 
