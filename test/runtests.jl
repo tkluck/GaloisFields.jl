@@ -4,6 +4,8 @@ using GaloisFields
 
 using LinearAlgebra: norm, tr
 
+using BitIntegers
+
 const G = @GaloisField! 𝔽₂₉ α^2 - 2
 const H = @GaloisField! G   β^3 + 2β + 1
 const J = @GaloisField! H   γ^7 - 2
@@ -31,6 +33,10 @@ const TestFields = [
     @GaloisField! 2^2 α
     @GaloisField! 5^2 α
     @GaloisField! 5^6 α
+
+    # BitIntegers
+    GaloisField(nextprime(Int256(typemax(Int128))+1))
+    GaloisField(prevprime(typemax(Int256)))
 ]
 
 const MAXITERATIONS = VERSION >= v"1.1" ? 1000 : 250 # v1.0 is much slower than recent, causing CI to error out.
