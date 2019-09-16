@@ -4,6 +4,8 @@ import Base: +, -, *, ^, div, rem, divrem, mod
 import Base: typemin, typemax, promote_rule, convert
 import Base: zero, one, iszero, isone
 
+import ..Util: widen_bits
+
 """
     BoundedInteger{Bounds, I <: Integer}
 
@@ -35,10 +37,10 @@ _joinbounds(op, b) = b
 _joinbounds(op, b, c...) = _joinbounds(op, b, _joinbounds(op, c...))
 function _joinbounds(op, b, c)
     extrema = (
-        op(widen(first(b)), widen(first(c))),
-        op(widen(first(b)), widen(last(c) )),
-        op(widen(last(b)),  widen(first(c))),
-        op(widen(last(b)),  widen(last(c) )),
+        op(widen_bits(first(b)), widen_bits(first(c))),
+        op(widen_bits(first(b)), widen_bits(last(c) )),
+        op(widen_bits(last(b)),  widen_bits(first(c))),
+        op(widen_bits(last(b)),  widen_bits(last(c) )),
     )
     lo, hi = min(extrema...), max(extrema...)
     I = _mintype(lo : hi)
@@ -47,9 +49,9 @@ end
 
 @inline function _mintype(bounds)
     T = Int8
-    while T != BigInt
+    while isbitstype(T)
         first(bounds) >= typemin(T) && last(bounds) <= typemax(T) && return T
-        T = widen(T)
+        T = widen_bits(T)
     end
     error("BoundedInteger out of bounds: $bounds")
 end
