@@ -36,4 +36,4 @@ const TestFields = [
     GaloisField(prevprime(typemax(Int256)))
 ]
 
-include("aritmetic.jl")
+include("arithmetic.jl")
