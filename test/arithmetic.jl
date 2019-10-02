@@ -1,7 +1,7 @@
 using Test
 using LinearAlgebra: norm, tr
 
-const MAXITERATIONS = VERSION >= v"1.1" ? 1000 : 250 # v1.0 is much slower than recent, causing CI to error out.
+const MAXITERATIONS = 100
 const MAXITERATIONS2 = round(Int, sqrt(MAXITERATIONS))
 const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
 
