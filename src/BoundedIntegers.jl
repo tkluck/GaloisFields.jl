@@ -3,6 +3,7 @@ module BoundedIntegers
 import Base: +, -, *, ^, div, rem, divrem, mod
 import Base: typemin, typemax, promote_rule, convert
 import Base: zero, one, iszero, isone
+import Base: @pure
 
 import ..Util: widen_bits
 
@@ -47,7 +48,7 @@ function _joinbounds(op, b, c)
     I(lo) : I(hi)
 end
 
-@inline function _mintype(bounds)
+@pure function _mintype(bounds)
     T = Int8
     while isbitstype(T)
         first(bounds) >= typemin(T) && last(bounds) <= typemax(T) && return T
