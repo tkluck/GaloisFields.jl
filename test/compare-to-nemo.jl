@@ -46,4 +46,21 @@ const G, δ = FiniteField(29, 42, "δ")
 galoisfields["q=29^42"] = benchmarks!(BenchmarkGroup(), γ)
 nemo["q=29^42"] = benchmarks!(BenchmarkGroup(), δ)
 
+# add a comparison between a 'naive' broadcast and the broadcast machinery
+# (This is not a comparison against Nemo but still nice to have in the same place.)
+let p = prevprime(typemax(Int16))
+    G = GaloisField(p, 1)
+    x = rand(0:p-1, 1_000_000)
+    y = rand(0:p-1, 1_000_000)
+    z = rand(0:p-1)
+    galoisfields["broadcast"] = BenchmarkGroup()
+    nemo["broadcast"] = BenchmarkGroup()
+
+    galoisfields["broadcast"]["add"] = @benchmarkable $(G.(x)) .+ $(G.(y))
+    nemo["broadcast"]["add"] = @benchmarkable mod.($x .+ $y, $p)
+
+    galoisfields["broadcast"]["muladd"] = @benchmarkable $(G.(x)) .+ $(G(z)) .* $(G.(y))
+    nemo["broadcast"]["muladd"] = @benchmarkable mod.($x .+ $z .* $y, $p)
+end
+
 println(judge(ratio(median(run(galoisfields)), median(run(nemo)))))
