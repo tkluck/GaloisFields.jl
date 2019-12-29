@@ -178,7 +178,7 @@ const _ApplicableInteger = Union{Int8, Int16, Int32}
     res = zero(Int64)
     for i in lo:STEP:hi
         for k in i:min(i + STEP - 1, hi)
-            res += widemul(vec1[k].n, vec2[N - k + 1].n)
+            res += Int64(vec1[k].n) * Int64(vec2[N - k + 1].n)
         end
         res = rem(res, p)
     end
@@ -197,8 +197,8 @@ end
     res = zero(Int64)
     for i in lo:STEP:mid
         for k in i:min(i + STEP - 1, mid)
-            factor = ifelse(mid_counts_once && k == mid, 1, 2)
-            res += factor * widemul(vec[k].n, vec[N - k + 1].n)
+            toadd = Int64(vec[k].n) * Int64(vec[N - k + 1].n)
+            res += ifelse(mid_counts_once && k == mid, toadd, 2toadd)
         end
         res = rem(res, p)
     end
