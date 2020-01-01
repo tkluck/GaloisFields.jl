@@ -287,8 +287,8 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
     @testset "Broadcast" begin
         F = @GaloisField 𝔽₂₉
 
-        x = rand(1:char(F), 100)
-        y = rand(1:char(F)-1, 100)
+        x = big.(rand(1:char(F), 100))
+        y = big.(rand(1:char(F)-1, 100))
 
         @test F[x;] .+ F[y;] == F.(x .+ y)
         @test F[x;] .* F[y;] == F.(x .* y)
