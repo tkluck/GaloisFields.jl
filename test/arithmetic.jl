@@ -52,6 +52,11 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         @test F(-1) * F(-1) == 1
         @test F(-1) + F(-1) == -2
         @test F(0) - F(-1) == 1
+
+        if F <: GaloisFields.PrimeField
+            @test Integer(F(3)) == F(3)
+            @test Integer(F(3)) isa GaloisFields.inttype(F)
+        end
     end
 
     @testset "Integer promotion with $F" for F in TestFields
