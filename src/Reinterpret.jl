@@ -1,7 +1,7 @@
 """
-Three-way reinterpretation of bits types: Integer, PrimeField, and BoundedInteger.
-These all have the same underlying representation and we want to be able
-to performantly convert between them.
+Reinterpretation between the bits types IntX and PrimeField. These have the same
+underlying representation and we want to be able to performantly convert between
+them.
 
 This would be _almost_ done if we just implemented reinterpret. The only issue is
 that `_getindex_ra` and `_setindex_ra!`` use `fieldcount(T) == 0` to determine whether
@@ -13,26 +13,14 @@ module Reinterpret
 import Base: reinterpret, ReinterpretArray, _getindex_ra, _setindex_ra!
 import Base: @propagate_inbounds
 
-import ..BoundedIntegers: BoundedInteger, val
 import GaloisFields: PrimeField, Reduced
-
-@inline reinterpret(T::Type{<:BoundedInteger{Bounds, I}}, x::I) where {Bounds, I} = T(x)
-@inline reinterpret(T::Type{I}, x::BoundedInteger{Bounds, I})   where {Bounds, I} = val(x)
 
 @inline reinterpret(F::Type{<:PrimeField{I}}, x::I) where I = F(Reduced(), x)
 @inline reinterpret(T::Type{I}, x::PrimeField{I})   where I = x.n
 
-@inline reinterpret(F::Type{<:PrimeField{I}}, x::BoundedInteger{Bounds, I}) where {Bounds, I} = F(Reduced(), val(x))
-@inline reinterpret(T::Type{BoundedInteger{Bounds, I}}, x::PrimeField{I})   where {Bounds, I} = T(x.n)
-
 const CONVERSIONS = [
-    # From, To, Where
-    (:(BoundedInteger{Bounds, I} where Bounds), :I, :I),
-    (:I, :(BoundedInteger{Bounds, I} where Bounds), :I),
     (:(PrimeField{I}), :I, :I),
     (:I, :(PrimeField{I}), :I),
-    (:(BoundedInteger{Bounds, I} where Bounds), :(PrimeField{I}), :I),
-    (:(PrimeField{I}), :(BoundedInteger{Bounds, I} where Bounds), :I),
 ]
 
 for (From, To, Where) in CONVERSIONS

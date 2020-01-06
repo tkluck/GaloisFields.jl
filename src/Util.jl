@@ -1,5 +1,7 @@
 module Util
 
+import Base: @pure
+
 import Requires: @require
 
 function hilo_mul(u::Int128, v::Int128)
@@ -26,5 +28,29 @@ function __init__()
         widen_bits(::Type{Int128}) = BitIntegers.Int256
     end
 end
+
+@pure function mintype(bounds)
+    T = Int8
+    while isbitstype(T)
+        first(bounds) >= typemin(T) && last(bounds) <= typemax(T) && return T
+        T = widen_bits(T)
+    end
+    error("BoundedInteger out of bounds: $bounds")
+end
+
+joinbounds(op, b) = b
+joinbounds(op, b, c...) = joinbounds(op, b, joinbounds(op, c...))
+function joinbounds(op, b, c)
+    extrema = (
+        op(widen_bits(first(b)), widen_bits(first(c))),
+        op(widen_bits(first(b)), widen_bits(last(c) )),
+        op(widen_bits(last(b)),  widen_bits(first(c))),
+        op(widen_bits(last(b)),  widen_bits(last(c) )),
+    )
+    lo, hi = min(extrema...), max(extrema...)
+    I = mintype(lo : hi)
+    I(lo) : I(hi)
+end
+
 
 end

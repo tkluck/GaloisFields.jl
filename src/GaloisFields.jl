@@ -57,14 +57,13 @@ char(::Type{<:Rational{<:Integer}}) = 0
 char(::Type{<:Integer}) = 0
 
 include("Util.jl")
-include("BoundedIntegers.jl")
 include("PrimeFields.jl")
+include("Reinterpret.jl")
 include("ZechLog.jl")
 include("ExtensionFields.jl")
 include("BinaryFields.jl")
 include("Conversions.jl")
 include("Iterations.jl")
-include("Reinterpret.jl")
 include("Broadcast.jl")
 include("Display.jl")
 include("LinearAlgebra.jl")

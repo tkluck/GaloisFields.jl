@@ -324,8 +324,13 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         @test F.(x) == F[x;]
         @test convert.(F, x) == F[x;]
 
+        @test Integer.(F[x;]) == mod.(x, char(F))
+
         # corner case: fuse operations with intermediate results bigger than integer type
         @test F[x;] .* F[x;] .* F[x;] .* F[x;] == map(x -> x^4, F[x;])
+
+        # tuple broadcasting
+        @test (F[x[1:10];]...,) .+ (F[y[1:10];]...,) == (F[x[1:10] .+ y[1:10];]...,)
     end
 
     @testset "Random selection" begin
