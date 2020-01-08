@@ -113,7 +113,7 @@ widenleaves(I, a::PrimeField) = a.n % I
 widenleaves(I, a::Integer) = a % I
 function widenleaves(I, bc::Broadcasted)
     if bc.f == widenleaves
-        return broadcasted(widenleaves, I, bc.args[2])
+        return broadcasted(widenleaves, promote_type(I, bc.args[1][]), bc.args[2])
     else
         extendedleaves = widenleavestuple(I, bc.args...)
         return Broadcasted{typeof(BroadcastStyle(typeof(bc)))}(bc.f, extendedleaves, bc.axes)
