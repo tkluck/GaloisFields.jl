@@ -166,19 +166,22 @@ function unreducedbroadcast(F, f, innerstyle, axes, args...)
     return UnreducedBroadcast(F, bounds(F), bc)
 end
 
+notnarrower(I, J) = promote_type(I, J) == I
+iswider(I, J) = !notnarrower(J, I)
+
 const FusableOps = Union{typeof(+), typeof(-), typeof(*), typeof(^)}
 
 function unreducedbroadcast(::Type{F}, f::FusableOps, innerstyle, axes, args::BroadcastableWithBounds{F}...) where F <: PrimeField
     resultbounds = joinbounds(f, map(bounds ∘ typeof, args)...)
     I = eltype(resultbounds)
     J = promote_type(map(eltype ∘ bounds ∘ typeof, args)...)
-    if promote_type(I, J) == J
+    if notnarrower(J, I)
         intargs = intvalstuple(args...)
         return UnreducedBroadcast(F, resultbounds, Broadcasted{typeof(innerstyle)}(f, intargs, axes))
-    elseif promote_type(I, Int) == Int
+    elseif notnarrower(Int, I)
         extargs = widenleavestuple(I, args...)
         return UnreducedBroadcast(F, resultbounds, Broadcasted{typeof(innerstyle)}(f, extargs, axes))
-    elseif J != inttype(F)
+    elseif iswider(J, inttype(F))
         redargs = reducedvalstuple(F, args...)
         return unreducedbroadcast(f, innerstyle, axes, redargs...)
     else
