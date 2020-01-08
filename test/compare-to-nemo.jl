@@ -21,8 +21,12 @@ function compare!(p, n)
         E, _ = FiniteField(p, n, "β")
         β = rand(E)
     else
-        D, α = GaloisField(p, n, :α)
-        E, β = FiniteField(p, n, "β")
+        D, γ = GaloisField(p, n, :γ)
+        E, δ = FiniteField(p, n, "δ")
+        # comment-out the desired implementation, because Nemo errors out
+        # on 'polynomial' and 'integer multiplication' otherwise.
+        α = γ #rand(D)
+        β = δ #sum(Integer(c) * δ^(i-1) for (i, c) in enumerate(expansion(α)))
     end
     galoisfields["q=$p^$n"] = benchmarks!(BenchmarkGroup(), α)
     nemo["q=$p^$n"] = benchmarks!(BenchmarkGroup(), β)
