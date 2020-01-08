@@ -71,7 +71,7 @@ function BroadcastStyle(s::AbstractArrayStyle{0}, t::FusedModStyle)
     FusedModStyle{eltype(t), typeof(st)}()
 end
 BroadcastStyle(s::FusedModStyle, t::FusedModStyle) = result_style(style(s), style(t))
-BroadcastStyle(s::FusedModStyle, t::BroadcastStyle) = t
+BroadcastStyle(s::FusedModStyle, t::BroadcastStyle) = result_style(style(s), t)
 
 const FusedModBroadcasted{F, InnerStyle} = Broadcasted{<:FusedModStyle{F, InnerStyle}}
 
