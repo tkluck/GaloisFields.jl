@@ -45,6 +45,11 @@ struct FusedModStyle{F, Style} <: BroadcastStyle end
 eltype(::FusedModStyle{F, Style}) where {F, Style} = F
 style(::FusedModStyle{F, Style})  where {F, Style} = Style()
 
+function BroadcastStyle(T::Type{<:F}) where F <: PrimeField
+    st = DefaultArrayStyle{0}()
+    FusedModStyle{F, typeof(st)}()
+end
+
 function BroadcastStyle(T::Type{<:AbstractArray{F}}) where F <: PrimeField
     st = DefaultArrayStyle{ndims(T)}()
     FusedModStyle{F, typeof(st)}()

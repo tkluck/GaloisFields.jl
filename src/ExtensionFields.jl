@@ -223,7 +223,7 @@ end
         coeffs_to_add = _pow_of_generator_rem(F, i - 1).coeffs
         for j in 1 : N
             if !iszero(coeffs_to_add[j])
-                push!(c.args[2].args, :( $(coeffs[j]) += q * $(coeffs_to_add[j]) ))
+                push!(c.args[2].args, :( $(coeffs[j]) = $(coeffs[j]) .+ q .* $(coeffs_to_add[j]) ))
             end
         end
         push!(code.args, c)
