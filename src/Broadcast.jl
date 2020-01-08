@@ -166,7 +166,7 @@ function unreducedbroadcast(F, f, innerstyle, axes, args...)
     return UnreducedBroadcast(F, bounds(F), bc)
 end
 
-const FusableOps = Union{typeof(+), typeof(-), typeof(*), typeof(^), typeof(posmod)}
+const FusableOps = Union{typeof(+), typeof(-), typeof(*), typeof(^)}
 
 function unreducedbroadcast(::Type{F}, f::FusableOps, innerstyle, axes, args::BroadcastableWithBounds{F}...) where F <: PrimeField
     resultbounds = joinbounds(f, map(bounds ∘ typeof, args)...)
@@ -195,8 +195,14 @@ end
 # -----------------------------------------------------------------------------
 const DivOp = Union{typeof(/), typeof(//)}
 function unreducedbroadcast(::Type{F}, f::DivOp, innerstyle, axes, a::BroadcastableWithBounds{F}, b::BroadcastableWithBounds{F}) where F <: PrimeField
-    inverse = unreducedbroadcast(broadcasted(invmod, intvals(b), char(F)))
-    return unreducedbroadcast(F, *, innerstyle, axes, a, inverse)
+    b_inverse = unreducedbroadcast(F, inv, innerstyle, axes, b)
+    return unreducedbroadcast(F, *, innerstyle, axes, a, b_inverse)
 end
+
+function unreducedbroadcast(::Type{F}, f::typeof(inv), innerstyle, axes, a::BroadcastableWithBounds{F}) where F <: PrimeField
+    bc_inverse = broadcasted(invmod, intvals(a), char(F))
+    return UnreducedBroadcast(F, bounds(F), bc_inverse)
+end
+
 
 end # module
