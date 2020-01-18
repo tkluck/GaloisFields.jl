@@ -122,6 +122,23 @@ of either is a power of the other, we convert into the bigger field. If not, we
 convert both into the field of order `p^N`, where `N` is the least common
 multiple of the extension degrees of `F` and `G` over ℤ/pℤ.
 
+## Constructing a tower of field extensions
+In some applications of finite fields it is convenient to use extensions 
+of already defined finite field, i. e. the extensions of the type
+`G` of power `q^m` over `F` of power `q` where `q = p^n` for some integers `m, n`.
+It is possible to construct an extension of already defined finite field:
+```julia
+# creating field with 29 elements
+F = @GaloisField 29
+# the polynom x^2 - 2 is irreducible over F29
+G = @GaloisField! F x^2 - 2
+# the polynom y^3 + 2y - 2 if irreducible over G
+H = @GaloisField! G   y^3 + 2y - 2
+# G is a subfield of H
+# H has |G|^3 elements
+```
+
+
 ## Acknowledgements
 
 This package uses [Frank Lübeck's][lubeck] [database of Conway polynomials][db].
