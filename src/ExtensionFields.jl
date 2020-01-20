@@ -69,22 +69,20 @@ function _gcdx(a::AbstractVector{C}, b::AbstractVector{C}) where C
     t1[1] = one(C)
     # The loop invariant is: s0*a0 + t0*b0 == a
     while len_b != 0
-        s2 = copy(s0)
-        t2 = copy(t0)
         while len_a >= len_b
             q = a[len_a] // b[len_b]
             a[len_a-len_b+1:len_a] .-= q .* b[1:len_b]
 
             deg_diff = len_a - len_b
-            s2[deg_diff+1:end] .-= q .* s1[1:end-deg_diff]
-            t2[deg_diff+1:end] .-= q .* t1[1:end-deg_diff]
+            s0[deg_diff+1:end] .-= q .* s1[1:end-deg_diff]
+            t0[deg_diff+1:end] .-= q .* t1[1:end-deg_diff]
 
             len_a = something(findprev(!iszero, a, len_a-1), 0)
         end
         a, b = b, a
         len_a, len_b = len_b, len_a
-        s0, s1 = s1, s2
-        t0, t1 = t1, t2
+        s0, s1 = s1, s0
+        t0, t1 = t1, t0
     end
     return (a, s0, t0)
 end
