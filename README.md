@@ -130,9 +130,9 @@ It is possible to construct an extension of already defined finite field:
 ```julia
 # creating field with 29 elements
 F = @GaloisField 29
-# the polynom x^2 - 2 is irreducible over F29
+# the polynomial x^2 - 2 is irreducible over F29
 G = @GaloisField! F x^2 - 2
-# the polynom y^3 + 2y - 2 if irreducible over G
+# the polynomial y^3 + 2y - 2 is irreducible over G
 H = @GaloisField! G   y^3 + 2y - 2
 # G is a subfield of H
 # H has |G|^3 elements
