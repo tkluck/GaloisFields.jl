@@ -56,6 +56,10 @@ function _downgrade(::Type{F}, i::ExtensionField{F}) where F <: AbstractGaloisFi
     all(iszero, i.coeffs[2:end]) || throw(InclusionError("$i is not contained in $F"))
     i.coeffs[1]
 end
+function _downgrade(F::Type{PrimeField{I, 2}}, i::BinaryField) where I
+    i.n == (i.n & 1) || throw(InclusionError("$i is not contained in $F"))
+    return F(i.n & 1)
+end
 _downgrade(F::Type{<:AbstractGaloisField}, i::AbstractGaloisField) = _downgrade(F, _downgrade(basefield(typeof(i)), i))
 _downgrade(::Type{F}, i::F) where F <: AbstractGaloisField = copy(i)
 

@@ -119,6 +119,9 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
         @test α - β == 1
         @test H(α) - β == 1
 
+        @test tr(GaloisField(2), α) == 1
+        @test tr(GaloisField(2), β) == 1
+
         # test for correct handling of integer overflow
         for n in [7:9; 15:17; 31:33; 63:65]
             F, α = GaloisField(2, n)
