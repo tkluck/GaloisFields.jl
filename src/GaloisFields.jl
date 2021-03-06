@@ -5,7 +5,16 @@ import LinearAlgebra: norm, tr
 import Random: AbstractRNG, SamplerType
 import Serialization: deserialize
 
-import Polynomials: Poly, coeffs
+import Polynomials
+# hasproperty(Polynomials, :Polynomial) but also works in Julia 1.0
+if try Polynomials.Polynomial; true; catch; false; end
+    import Polynomials: Polynomial, coeffs
+    Poly = Union{Polynomial, Polynomials.PolyCompat.Poly}
+else
+    import Polynomials: Poly, coeffs
+    Polynomial = Poly
+end
+
 import Primes: factor, Factorization
 
 # imports for overloading
@@ -247,7 +256,7 @@ function _parse_declaration(expr)
 end
 
 _parsepoly(x) = x
-_parsepoly(x::Symbol) = :( $(Poly([0, 1], x) ) )
+_parsepoly(x::Symbol) = :( $(Polynomial([0, 1], x) ) )
 function _parsepoly(expr::Expr)
     Expr(expr.head, expr.args[1], map(_parsepoly, expr.args[2:end])...)
 end

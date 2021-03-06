@@ -1,7 +1,7 @@
 name = "GaloisFields"
 uuid = "8d0d7f98-d412-5cd4-8397-071c807280aa"
 authors = ["Timo Kluck <tkluck@infty.nl>"]
-version = "1.0.1"
+version = "1.1.0"
 
 [deps]
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
@@ -14,10 +14,10 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
 [compat]
-HTTP = "0.8"
+HTTP = "0.8, 0.9"
 JSON = "0.21"
-Polynomials = "0.6"
-Primes = "0.4"
+Polynomials = "0.6, 0.7, 1.0"
+Primes = "0.4, 0.5"
 Requires = "0.5, 1.0"
 julia = "1.0"
 
