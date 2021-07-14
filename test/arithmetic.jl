@@ -1,5 +1,6 @@
 using Test
 using LinearAlgebra: norm, tr
+using GaloisFields.Broadcast: @broadcasted, isfused
 
 const MAXITERATIONS = 100
 const MAXITERATIONS2 = round(Int, sqrt(MAXITERATIONS))
@@ -334,6 +335,15 @@ const MAXITERATIONS3 = round(Int, cbrt(MAXITERATIONS))
 
         # tuple broadcasting
         @test (F[x[1:10];]...,) .+ (F[y[1:10];]...,) == (F[x[1:10] .+ y[1:10];]...,)
+
+        # Booleans
+        @test eltype(F[x;] .== F[y;]) == Bool
+
+        # test that operations get fused
+        @test isfused(@broadcasted $(F[x;]) + $(F[y;]))
+        @test isfused(@broadcasted $(F[x;]) + $(F(y[1])) * $(F[y;]))
+        @test isfused(@broadcasted $(F[x;]) - $(F(y[1])) * $(F[y;]))
+        @test isfused(@broadcasted $(F[x;]) - $(F[y;]) / $(F(y[1])))
     end
 
     @testset "Random selection" begin
