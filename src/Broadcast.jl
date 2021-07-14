@@ -210,6 +210,16 @@ function _maybe_unreducedbroadcast(::Type{F}, f::typeof(inv), innerstyle, axes, 
     return UnreducedBroadcast(F, bounds(F), bc_inverse)
 end
 
+# -----------------------------------------------------------------------------
+#
+# Transform == to a version that does only a single mod reduction
+#
+# -----------------------------------------------------------------------------
+function _maybe_unreducedbroadcast(::Type{F}, f::typeof(==), innerstyle, axes, a::BroadcastableWithBounds{F}, b::BroadcastableWithBounds{F}) where F <: PrimeField
+    bc_diff = _maybe_unreducedbroadcast(F, -, innerstyle, axes, a, b)
+    return broadcasted(iszero, maybe_reduce(bc_diff))
+end
+
 
 # -----------------------------------------------------------------------------
 #
