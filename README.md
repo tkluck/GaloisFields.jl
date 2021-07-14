@@ -148,8 +148,8 @@ It is downloaded as part of the install process.
 [conway]: https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)
 
 
-[travis-img]: https://travis-ci.org/tkluck/GaloisFields.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/tkluck/GaloisFields.jl
+[travis-img]: https://travis-ci.com/tkluck/GaloisFields.jl.svg?branch=master
+[travis-url]: https://travis-ci.com/tkluck/GaloisFields.jl
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/74ti0cx7honk82yj?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/tkluck/galoisfields-jl
