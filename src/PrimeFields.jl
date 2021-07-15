@@ -184,5 +184,5 @@ convert(::Type{F}, n::F) where F<:PrimeField = n
 #
 # -----------------------------------------------------------------------------
 function rand(rng::AbstractRNG, ::SamplerType{F}) where F <: PrimeField
-    F(rand(rng, 0 : char(F)-1))
+    F(Reduced(), rand(rng, 0 : char(F)-1))
 end
