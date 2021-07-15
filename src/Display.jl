@@ -53,10 +53,13 @@ function defaultshow(io, t)
     end
 end
 
+const SUBSCRIPTS = collect("₀₁₂₃₄₅₆₇₈₉")
+subscript(x) = join(getindex.(Ref(SUBSCRIPTS), reverse(digits(x)) .+ 1))
+
 function show(io::IO, t::Type{PrimeField{I,p}}) where {I,p}
     !isconcretetype(t) && return defaultshow(io, t)
 
-    number = replace("$p", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])
+    number = subscript(p)
     write(io, "𝔽$number")
 end
 
@@ -65,6 +68,6 @@ function show(io::IO, F::Type{<:AbstractExtensionField})
     !isconcretetype(F) && return defaultshow(io, F)
 
     q = length(F)
-    number = replace("$q", r"[0-9]" => x->['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'][parse(Int,x) + 1])
+    number = subscript(q)
     write(io, "𝔽$number")
 end
