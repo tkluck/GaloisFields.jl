@@ -5,7 +5,7 @@ them.
 
 This would be _almost_ done if we just implemented reinterpret. The only issue is
 that `_getindex_ra` and `_setindex_ra!`` use `fieldcount(T) == 0` to determine whether
-T is suitable for re-interpretation. In our cases, `foundcount(T) == 1`, so
+T is suitable for re-interpretation. In our cases, `fieldcount(T) == 1`, so
 we have to override these two methods.
 """
 module Reinterpret
