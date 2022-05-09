@@ -5,15 +5,7 @@ import LinearAlgebra: norm, tr
 import Random: AbstractRNG, SamplerType
 import Serialization: deserialize
 
-import Polynomials
-# hasproperty(Polynomials, :Polynomial) but also works in Julia 1.0
-if try Polynomials.Polynomial; true; catch; false; end
-    import Polynomials: Polynomial, coeffs
-    Poly = Union{Polynomial, Polynomials.PolyCompat.Poly}
-else
-    import Polynomials: Poly, coeffs
-    Polynomial = Poly
-end
+import Polynomials: Polynomial, coeffs, indeterminate
 
 import Primes: factor, Factorization
 
@@ -122,9 +114,9 @@ certain distinguished inclusions between them.
 """
 function GaloisField end
 
-GaloisField(p::Integer, minpoly::Poly) = GaloisField(GaloisField(p, 1), minpoly)
+GaloisField(p::Integer, minpoly::Polynomial) = GaloisField(GaloisField(p, 1), minpoly)
 GaloisField(p::Integer, minpoly::Pair) = GaloisField(GaloisField(p, 1), minpoly)
-GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Poly) = GaloisField(F, minpoly.var => coeffs(minpoly))
+GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Polynomial) = GaloisField(F, indeterminate(minpoly) => coeffs(minpoly))
 function GaloisField(F::Type{<:AbstractGaloisField}, minpoly::Pair{Symbol, <:AbstractVector{<:Number}}, conway=false)
     sym, coeffs = minpoly
     mp = tuple(map(F, coeffs)...)
@@ -295,7 +287,7 @@ macro GaloisField!(expr, minpoly)
         sym = minpoly
     else
         poly = @eval $(_parsepoly(minpoly))
-        sym = poly.var
+        sym = indeterminate(poly)
     end
     decl = _parse_declaration(expr)
     F = something(decl, esc(expr))
