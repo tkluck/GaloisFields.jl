@@ -1,3 +1,5 @@
+import Base.BinaryPlatforms.CPUID: JL_X86_pclmul, test_cpu_feature
+
 # we use the Bits singleton to avoid ambiguity between the constructor that
 # takes a bit pattern and the constructor that takes an Integer value (to be
 # interpreted mod 2).
@@ -62,25 +64,47 @@ _widen(::Type{UInt8}) = UInt16
 _widen(::Type{UInt16}) = UInt32
 _widen(::Type{UInt32}) = UInt64
 _widen(::Type{UInt64}) = UInt128
-function carrylessmul(a::I, b::I) where I <: Integer
-    J = _widen(I)
 
-    lhs = VecElement.((UInt64(a), UInt64(0)))
-    rhs = VecElement.((UInt64(b), UInt64(0)))
-    clmul = carrylessmul(lhs, rhs)
+# a faster version of carry-less multiplication for those cases where the CPU provides
+# a specific instruction for it.
+@static if test_cpu_feature(JL_X86_pclmul)
 
-    if sizeof(J) <= sizeof(Int64)
-        return J(clmul[1].value)
-    else
-        res = J(clmul[1].value)
-        res |= J(clmul[2].value) << 64
+    const m128 = NTuple{2,VecElement{UInt64}}
+    function _carrylessmul(a::m128, b::m128)
+        ccall("llvm.x86.pclmulqdq", llvmcall, m128, (m128, m128, UInt8), a, b, 0)
+    end
+
+    function carrylessmul(a::I, b::I) where I <: Integer
+        J = _widen(I)
+
+        lhs = VecElement.((UInt64(a), UInt64(0)))
+        rhs = VecElement.((UInt64(b), UInt64(0)))
+        clmul = _carrylessmul(lhs, rhs)
+
+        if sizeof(J) <= sizeof(Int64)
+            return J(clmul[1].value)
+        else
+            res = J(clmul[1].value)
+            res |= J(clmul[2].value) << 64
+            return res
+        end
+    end
+
+else
+    include("BitReversal.jl")
+
+    function carrylessmul(a::I, b::I) where I <: Integer
+        J = _widen(I)
+        res = zero(J)
+        a = J(a)
+        b = bitreversal(J(b))
+        for _ = 1:8sizeof(J)
+            res <<= 1
+            res |= (count_ones(b & a) & 1) % J
+            b >>= 1
+        end
         return res
     end
-end
-
-const m128 = NTuple{2,VecElement{UInt64}}
-function carrylessmul(a::m128, b::m128)
-    ccall("llvm.x86.pclmulqdq", llvmcall, m128, (m128, m128, UInt8), a, b, 0)
 end
 
 function *(::Direct, a::F, b::F) where F <: BinaryField{I} where I
