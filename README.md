@@ -1,8 +1,8 @@
 # GaloisFields.jl - finite fields for Julia
 
-| **Build Status**                                                | **Test coverage**                                       |
-|:---------------------------------------------------------------:|:-------------------------------------------------------:|
-| [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![Coverage Status][codecov-img]][codecov-url]      |
+| **Build Status**            | **Test coverage**                               |
+|:---------------------------:|:-----------------------------------------------:|
+| [![][c-i-img]][c-i-url]     | [![Coverage Status][codecov-img]][codecov-url]  |
 
 ## Introduction
 
@@ -147,12 +147,8 @@ It is downloaded as part of the install process.
 
 [conway]: https://en.wikipedia.org/wiki/Conway_polynomial_(finite_fields)
 
-
-[travis-img]: https://travis-ci.com/tkluck/GaloisFields.jl.svg?branch=master
-[travis-url]: https://travis-ci.com/tkluck/GaloisFields.jl
-
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/74ti0cx7honk82yj?svg=true
-[appveyor-url]: https://ci.appveyor.com/project/tkluck/galoisfields-jl
+[c-i-img]: https://github.com/tkluck/GaloisFields.jl/workflows/CI/badge.svg
+[c-i-url]: https://github.com/tkluck/GaloisFields.jl/actions?query=workflow%3ACI
 
 [codecov-img]: https://codecov.io/gh/tkluck/GaloisFields.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/tkluck/GaloisFields.jl
