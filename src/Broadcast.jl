@@ -36,6 +36,8 @@ import Base.Broadcast: result_style, instantiate
 import ..Util: joinbounds
 import GaloisFields: inttype, char, PrimeField, posmod
 
+const TupleOf{F, N} = Tuple{F, Vararg{F, N}}
+
 # -----------------------------------------------------------------------------
 #
 # Define FusedModStyle broadcasting style and declare when it should be used.
@@ -54,7 +56,7 @@ function BroadcastStyle(T::Type{<:AbstractArray{F}}) where F <: PrimeField
     st = DefaultArrayStyle{ndims(T)}()
     FusedModStyle{F, typeof(st)}()
 end
-function BroadcastStyle(T::Type{<:NTuple{N, F}}) where {N, F <: PrimeField}
+function BroadcastStyle(T::Type{<:TupleOf{F}}) where F <: PrimeField
     st = Style{Tuple}()
     FusedModStyle{F, typeof(st)}()
 end
@@ -104,7 +106,6 @@ end
 eltype(::UnreducedBroadcast{F}) where F <: PrimeField = F
 @inline UnreducedBroadcast(F, bounds, bc) = UnreducedBroadcast{F, typeof(bc), bounds}(bc)
 
-const TupleOf{F, N} = NTuple{N, F}
 
 bounds(::Type{<:UnreducedBroadcast{F, BC, Bounds}}) where {F, BC, Bounds} = Bounds
 bounds(a::Type{<:AbstractArray{<:PrimeField{I}}}) where I = I(0) : I(char(eltype(a)) - 1)
