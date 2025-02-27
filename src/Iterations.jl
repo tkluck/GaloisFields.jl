@@ -22,7 +22,7 @@ iterate(K::Type{<:BinaryField}, state) = state < 2^n(K) ? (K(Bits(), state), sta
     and is at least Int.
 """
 function safepow(q::Signed, n)
-    q = q isa Base.SmallSigned ? Int(q) : q
+    q = (q isa Int16 || q isa Int32 || q isa Int8) ? Int(q) : q
     bits = leading_zeros(zero(q)) -  leading_zeros(q)
     m = n * bits
     if m <= leading_zeros(zero(Int))
