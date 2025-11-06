@@ -15,8 +15,8 @@ Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
 [compat]
 HTTP = "0.9, 1"
-JSON = "1.2.0"
-Polynomials = "4.1.0"
+JSON = "0.21, 1"
+Polynomials = "2, 3, 4"
 Primes = "0.5"
 Requires = "1"
 julia = "1.6"
