@@ -30,17 +30,24 @@ jobs:
           - macOS-latest
           - windows-latest
         arch:
-          - x64
           - x86
+          - x64
+          - arm64
         experimental:
           - false
         exclude:
-          # Test 32-bit only on Linux
+          # arm64 only for Apple silicon
+          - os: ubuntu-latest
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
+          # x86 only on Windows where that was common relatively recently
+          - os: ubuntu-latest
+            arch: x86
           - os: macOS-latest
             arch: x86
-          - os: windows-latest
-            arch: x86
         include:
+          # early warning for issues in nightly
           - os: ubuntu-latest
             version: nightly
             arch: x64
