@@ -1,3 +1,4 @@
+import Base: Integer
 import Base.Checked: add_with_overflow, sub_with_overflow
 
 import .Util: hilo_mul, widen_bits
