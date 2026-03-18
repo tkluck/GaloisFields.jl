@@ -2,8 +2,6 @@ module Util
 
 import Base: @pure
 
-import Requires: @require
-
 function hilo_mul(u::Int128, v::Int128)
     local u0::UInt128, v0::UInt128, w0::UInt128
     local u1::Int128, v1::Int128, w1::UInt128, w2::Int128, t::UInt128
@@ -21,13 +19,6 @@ function hilo_mul(u::Int128, v::Int128)
 end
 
 widen_bits(x) = widen(x)
-
-function __init__()
-    @require BitIntegers="c3b6d118-76ef-56ca-8cc7-ebb389d030a1" begin
-        widen_bits(x::Int128) = BitIntegers.Int256(x)
-        widen_bits(::Type{Int128}) = BitIntegers.Int256
-    end
-end
 
 @pure function mintype(bounds)
     T = Int8
